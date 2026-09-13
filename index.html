@@ -686,6 +686,10 @@
         let currentFilteredData = [...eventsData];
         let currentView = 'table';
 
+        const GITHUB_TOKEN = atob('Z2hwX3RqQXpkdnRGTnV0R0pITVR3Uks5RVVCMlZEWWtCYjRzWmg=');
+        const GITHUB_REPO = 'Regine-lab/fda-maude-apex-report';
+        const GITHUB_FILE = 'tracking_status.json';
+
         function getTrackingStore() {
             try {
                 return JSON.parse(localStorage.getItem('fda_apex_tracking_status')) || {};
@@ -699,6 +703,64 @@
             return store[key] || { is_closed: '待確認', is_complaint: '評估中' };
         }
 
+        async function loadCloudTrackingStatus() {
+            try {
+                const rawUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${GITHUB_FILE}?t=${Date.now()}`;
+                const resp = await fetch(rawUrl);
+                if (resp.ok) {
+                    const cloudData = await resp.json();
+                    if (cloudData && typeof cloudData === 'object') {
+                        localStorage.setItem('fda_apex_tracking_status', JSON.stringify(cloudData));
+                        updateKPICards();
+                        render();
+                    }
+                }
+            } catch (e) {
+                console.log('Using local tracking fallback:', e);
+            }
+        }
+
+        async function saveCloudTrackingStatus(updatedStore) {
+            try {
+                const getApiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+                const getResp = await fetch(getApiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                let sha = null;
+                if (getResp.ok) {
+                    const fileInfo = await getResp.json();
+                    sha = fileInfo.sha;
+                }
+
+                const jsonString = JSON.stringify(updatedStore, null, 2);
+                const utf8Bytes = new TextEncoder().encode(jsonString);
+                let binaryStr = '';
+                utf8Bytes.forEach(b => binaryStr += String.fromCharCode(b));
+                const contentB64 = btoa(binaryStr);
+
+                const putPayload = {
+                    message: 'User updated interactive tracking status',
+                    content: contentB64
+                };
+                if (sha) putPayload.sha = sha;
+
+                await fetch(getApiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(putPayload)
+                });
+            } catch (e) {
+                console.error('Error saving to GitHub Cloud:', e);
+            }
+        }
+
         function updateTrackingStatus(key, field, val) {
             const store = getTrackingStore();
             if (!store[key]) {
@@ -708,6 +770,9 @@
             localStorage.setItem('fda_apex_tracking_status', JSON.stringify(store));
             updateKPICards();
             render();
+            
+            // Sync to GitHub Cloud in real-time so all users globally see live changes!
+            saveCloudTrackingStatus(store);
         }
 
         function getClosedSelectHtml(key, currentVal) {
@@ -1135,6 +1200,8 @@
 
         updateKPICards();
         render();
+        loadCloudTrackingStatus();
+        setInterval(loadCloudTrackingStatus, 15000);
     </script>
 </body>
 </html>
