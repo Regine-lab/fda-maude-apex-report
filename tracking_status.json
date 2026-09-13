@@ -1,6 +1,7 @@
 {
   "50212955": {
     "is_closed": "處理中",
-    "is_complaint": "是"
+    "is_complaint": "是",
+    "note": "測試備註測試123"
   }
 }
