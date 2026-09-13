@@ -10,23 +10,25 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-card-hover: #334155;
-            --border-color: #334155;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --accent-blue: #38bdf8;
-            --accent-indigo: #818cf8;
-            --accent-emerald: #34d399;
-            --danger-bg: rgba(244, 63, 94, 0.15);
-            --danger-text: #fb7185;
-            --danger-border: rgba(244, 63, 94, 0.3);
-            --warning-bg: rgba(245, 158, 11, 0.15);
-            --warning-text: #fbbf24;
-            --warning-border: rgba(245, 158, 11, 0.3);
-            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            --bg-dark: #F5F2EB;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #FAF7F2;
+            --border-color: #E2DDD5;
+            --text-primary: #3B3833;
+            --text-secondary: #6B655B;
+            --text-muted: #999185;
+            --accent-green: #6E7E65;
+            --accent-green-hover: #5A6952;
+            --accent-warm: #D4A373;
+            --accent-warm-light: #F1E3D3;
+            --accent-sage: #8A9A86;
+            --danger-bg: #FBEBEB;
+            --danger-text: #C05656;
+            --danger-border: #E8B4B4;
+            --warning-bg: #FEF6EC;
+            --warning-text: #D97706;
+            --warning-border: #FCD34D;
+            --shadow-lg: 0 10px 25px -5px rgba(100, 90, 80, 0.08), 0 8px 10px -6px rgba(100, 90, 80, 0.05);
         }
 
         * {
@@ -40,7 +42,7 @@
             background-color: var(--bg-dark);
             color: var(--text-primary);
             line-height: 1.6;
-            padding: 24px;
+            padding: 28px;
             min-height: 100vh;
         }
 
@@ -50,10 +52,10 @@
         }
 
         header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAF7F2 100%);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 28px 32px;
+            border-radius: 18px;
+            padding: 30px 36px;
             margin-bottom: 24px;
             box-shadow: var(--shadow-lg);
             position: relative;
@@ -67,7 +69,7 @@
             left: 0;
             width: 6px;
             height: 100%;
-            background: linear-gradient(to bottom, var(--accent-blue), var(--accent-indigo));
+            background: linear-gradient(to bottom, var(--accent-green), var(--accent-warm));
         }
 
         .header-title-group {
@@ -79,7 +81,7 @@
         }
 
         .header-title h1 {
-            font-size: 1.8rem;
+            font-size: 1.85rem;
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 6px;
@@ -90,12 +92,12 @@
 
         .header-title h1 span.badge-header {
             font-size: 0.75rem;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 9999px;
-            background: rgba(56, 189, 248, 0.15);
-            color: var(--accent-blue);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            font-weight: 500;
+            background: var(--accent-warm-light);
+            color: #8B5E34;
+            border: 1px solid #E6CDB5;
+            font-weight: 600;
         }
 
         .header-title p {
@@ -111,7 +113,7 @@
         }
 
         .meta-tag-box {
-            background: rgba(15, 23, 42, 0.8);
+            background: #F2EDE4;
             border: 1px solid var(--border-color);
             border-radius: 10px;
             padding: 8px 14px;
@@ -122,12 +124,12 @@
         }
 
         .meta-tag-box strong {
-            color: var(--accent-blue);
+            color: var(--accent-green);
         }
 
         .btn-excel {
-            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, #6E7E65 0%, #5A6952 100%);
+            color: #FFFFFF;
             border: none;
             padding: 10px 18px;
             border-radius: 10px;
@@ -137,14 +139,15 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 12px rgba(110, 126, 101, 0.25);
             transition: all 0.2s;
             text-decoration: none;
         }
 
         .btn-excel:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 6px 16px rgba(110, 126, 101, 0.35);
+            background: linear-gradient(135deg, #5A6952 0%, #495642 100%);
         }
 
         .kpi-grid {
@@ -157,14 +160,16 @@
         .kpi-card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 20px;
-            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
         }
 
         .kpi-card:hover {
             transform: translateY(-2px);
-            border-color: var(--accent-blue);
+            border-color: var(--accent-green);
+            box-shadow: 0 8px 20px rgba(110, 126, 101, 0.12);
         }
 
         .kpi-label {
@@ -178,6 +183,7 @@
             font-size: 2rem;
             font-weight: 700;
             line-height: 1.1;
+            color: var(--text-primary);
         }
 
         .kpi-subtext {
@@ -189,7 +195,7 @@
         .controls-card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 20px;
             margin-bottom: 24px;
             display: flex;
@@ -197,6 +203,7 @@
             gap: 16px;
             align-items: center;
             justify-content: space-between;
+            box-shadow: var(--shadow-lg);
         }
 
         .filter-group {
@@ -215,22 +222,23 @@
         .filter-item label {
             font-size: 0.75rem;
             color: var(--text-secondary);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         select, input[type="text"] {
-            background-color: var(--bg-dark);
+            background-color: #FAF7F2;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 8px;
             font-size: 0.875rem;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         select:focus, input[type="text"]:focus {
-            border-color: var(--accent-blue);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(110, 126, 101, 0.15);
         }
 
         input[type="text"] {
@@ -239,7 +247,7 @@
 
         .view-toggle {
             display: flex;
-            background-color: var(--bg-dark);
+            background-color: #FAF7F2;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 3px;
@@ -257,15 +265,15 @@
         }
 
         .view-btn.active {
-            background-color: var(--bg-card-hover);
-            color: var(--accent-blue);
+            background-color: var(--accent-green);
+            color: #FFFFFF;
             font-weight: 600;
         }
 
         .table-container {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 14px;
             overflow-x: auto;
             box-shadow: var(--shadow-lg);
         }
@@ -278,12 +286,12 @@
         }
 
         th {
-            background-color: #162032;
-            color: var(--text-secondary);
+            background-color: #6E7E65;
+            color: #FFFFFF;
             font-weight: 600;
             padding: 14px 16px;
             border-bottom: 1px solid var(--border-color);
-            font-size: 0.8rem;
+            font-size: 0.825rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             white-space: nowrap;
@@ -291,13 +299,17 @@
 
         td {
             padding: 16px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #EDE8E1;
             color: var(--text-primary);
             vertical-align: top;
         }
 
+        tr:nth-child(even) td {
+            background-color: #FAF8F5;
+        }
+
         tr:hover td {
-            background-color: rgba(51, 65, 85, 0.4);
+            background-color: #F3EFE9;
         }
 
         .badge {
@@ -322,29 +334,29 @@
         }
 
         .badge-model {
-            background-color: rgba(129, 140, 248, 0.15);
-            color: var(--accent-indigo);
-            border: 1px solid rgba(129, 140, 248, 0.3);
+            background-color: #F1E3D3;
+            color: #8B5E34;
+            border: 1px solid #E6CDB5;
             font-family: monospace;
         }
 
         .badge-status {
-            background-color: rgba(56, 189, 248, 0.1);
-            color: var(--accent-blue);
-            border: 1px solid rgba(56, 189, 248, 0.25);
+            background-color: #E8EFE6;
+            color: #495642;
+            border: 1px solid #C4D4C0;
             font-size: 0.75rem;
             padding: 3px 8px;
             border-radius: 6px;
         }
 
         .narrative-box {
-            background-color: rgba(15, 23, 42, 0.6);
-            border-left: 3px solid var(--accent-blue);
+            background-color: #FAF7F2;
+            border-left: 3px solid var(--accent-green);
             padding: 10px 14px;
             border-radius: 4px;
             font-size: 0.875rem;
             margin-top: 6px;
-            color: #cbd5e1;
+            color: #4A463F;
         }
 
         .narrative-en {
@@ -355,18 +367,21 @@
         }
 
         .action-btn {
-            background: rgba(56, 189, 248, 0.1);
-            color: var(--accent-blue);
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            background: #E8EFE6;
+            color: #3B4A34;
+            border: 1px solid #C4D4C0;
             padding: 6px 12px;
             border-radius: 6px;
             font-size: 0.8rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .action-btn:hover {
-            background: rgba(56, 189, 248, 0.25);
+            background: var(--accent-green);
+            color: #FFFFFF;
+            border-color: var(--accent-green);
         }
 
         .cards-grid {
@@ -378,17 +393,19 @@
         .event-card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
         }
 
         .event-card:hover {
             transform: translateY(-3px);
-            border-color: var(--accent-blue);
+            border-color: var(--accent-green);
+            box-shadow: 0 10px 25px rgba(110, 126, 101, 0.15);
         }
 
         .card-header {
@@ -416,7 +433,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.75);
+            background-color: rgba(59, 56, 51, 0.5);
             backdrop-filter: blur(4px);
             display: none;
             justify-content: center;
@@ -432,13 +449,13 @@
         .modal-content {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 18px;
             max-width: 900px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
             padding: 28px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             position: relative;
         }
 
@@ -461,7 +478,7 @@
         .modal-section-title {
             font-size: 0.9rem;
             font-weight: 600;
-            color: var(--accent-blue);
+            color: var(--accent-green);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 8px;
@@ -479,12 +496,12 @@
         }
 
         .fda-notice {
-            background: rgba(245, 158, 11, 0.08);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            border-radius: 8px;
+            background: #FEF6EC;
+            border: 1px solid #FCD34D;
+            border-radius: 10px;
             padding: 12px 16px;
-            font-size: 0.8rem;
-            color: var(--warning-text);
+            font-size: 0.825rem;
+            color: #92400E;
             margin-bottom: 20px;
         }
 
@@ -519,7 +536,7 @@
                         <button class="btn-excel" onclick="exportToExcel()">
                             <span>📥 匯出動態 Excel (.xlsx)</span>
                         </button>
-                        <a href="fda_maude_apex_2025_2026_iso_summary.xlsx" class="btn-excel" style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-color);" download>
+                        <a href="fda_maude_apex_2025_2026_iso_summary.xlsx" class="btn-excel" style="background: #FAF7F2; color: #4A463F; border: 1px solid var(--border-color); box-shadow: none;" download>
                             <span>📂 下載 4 大指標 Excel 檔</span>
                         </a>
                     </div>
