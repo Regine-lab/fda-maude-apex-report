@@ -51,7 +51,7 @@
         }
 
         .container {
-            max-width: 1450px;
+            max-width: 1550px;
             margin: 0 auto;
         }
 
@@ -125,6 +125,7 @@
             color: var(--text-secondary);
             display: flex;
             gap: 16px;
+            align-items: center;
         }
 
         .meta-tag-box strong {
@@ -383,13 +384,6 @@
             color: #000000 !important;
         }
 
-        .narrative-en {
-            font-size: 0.8rem;
-            color: #4B5563 !important;
-            margin-top: 8px;
-            font-style: italic;
-        }
-
         .action-btn {
             background: #E8EFE6;
             color: #3B4A34;
@@ -474,7 +468,7 @@
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 18px;
-            max-width: 900px;
+            max-width: 950px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -587,6 +581,9 @@
                     <div class="meta-tag-box">
                         <div>FDA 查詢登記日期：<strong>2026-09-13</strong></div>
                         <div>查詢負責人：<strong>Regine</strong></div>
+                        <div id="sync-badge-container">
+                            <span id="sync-status-badge" style="font-size: 0.8rem; font-weight: 600; color: #14532D; background: #E8EFE6; padding: 4px 10px; border-radius: 999px; border: 1px solid #A3C99B;">🟢 雲端已同步</span>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap;">
                         <button id="btn-save-cloud" class="btn-excel" style="background: linear-gradient(135deg, #495642 0%, #3B4734 100%); color: #FFFFFF;" onclick="manualSaveCloud()">
@@ -604,7 +601,7 @@
         </header>
 
         <div class="fda-notice">
-            💡 <strong>ISO 品質管理系統管制指標已全面整合：</strong> 本報告已依據收件日期時間正序排列（最早收件為第 1 筆，最新收件為第 21 筆）。表格已納入 ① 通報類別 (Type of Report) ② 機器是否已完成檢測 (Device Evaluated) ③ 矯正/補件動作 (Remedial Action) ④ 製造商敘述結論 (Manufacturer Narrative)。查詢人：<code>Regine</code>，查詢登記日期：<code>2026-09-13</code>。<a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm" target="_blank" class="link-active">點此開啟 FDA MAUDE 官方搜尋主頁 🔗</a>
+            💡 <strong>ISO 品質管理系統管制指標已全面整合：</strong> 本報告已依據收件日期時間正序排列（最早收件為第 1 筆，最新收件為第 21 筆）。表格已納入 ① 通報類別 ② 機器是否已完成檢測 ③ 矯正/補件動作 ④ 製造商敘述結論 ⑤ 客戶是否結案？ ⑥ 是否轉客訴流程？ ⑦ 追蹤備註/客訴單號。查詢人：<code>Regine</code>，查詢登記日期：<code>2026-09-13</code>。<a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm" target="_blank" class="link-active">點此開啟 FDA MAUDE 官方搜尋主頁 🔗</a>
         </div>
 
         <!-- Dynamic KPI Cards Container -->
@@ -665,7 +662,7 @@
             <div class="filter-group">
                 <div class="filter-item">
                     <label for="search-input">關鍵字搜尋</label>
-                    <input type="text" id="search-input" oninput="render()" placeholder="搜尋 MDR Key, 描述或零件關鍵字...">
+                    <input type="text" id="search-input" oninput="render()" placeholder="搜尋 MDR Key, 描述, 備註或客訴編號...">
                 </div>
                 <div class="view-toggle">
                     <button class="view-btn active" id="btn-view-table" onclick="setViewMode('table')">表格檢視</button>
@@ -686,10 +683,11 @@
                         <th style="width: 130px;">② 機器檢測狀態</th>
                         <th style="width: 130px;">③ 矯正/補件動作</th>
                         <th style="width: 140px;">品牌與型號</th>
-                        <th style="min-width: 220px;">事件敘述 (繁體中文翻譯)</th>
-                        <th style="min-width: 220px;">④ 製造商敘述結論 (繁體中文翻譯)</th>
+                        <th style="min-width: 200px;">事件敘述 (繁體中文翻譯)</th>
+                        <th style="min-width: 200px;">④ 製造商敘述結論 (繁體中文翻譯)</th>
                         <th style="width: 135px; background-color: #495642;">⑤ 客戶是否結案？ (互動選單)</th>
                         <th style="width: 135px; background-color: #495642;">⑥ 是否轉客訴流程？ (互動選單)</th>
+                        <th style="min-width: 180px; background-color: #495642;">⑦ 追蹤備註 / 客訴單號 (可自由打字)</th>
                         <th style="width: 100px;">FDA 連結</th>
                     </tr>
                 </thead>
@@ -735,6 +733,16 @@
         const GITHUB_REPO = 'Regine-lab/fda-maude-apex-report';
         const GITHUB_FILE = 'tracking_status.json';
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
         function getTrackingStore() {
             try {
                 return JSON.parse(localStorage.getItem('fda_apex_tracking_status')) || {};
@@ -745,7 +753,25 @@
 
         function getTrackingStatus(key) {
             const store = getTrackingStore();
-            return store[key] || { is_closed: '待確認', is_complaint: '評估中' };
+            return store[key] || { is_closed: '待確認', is_complaint: '評估中', note: '' };
+        }
+
+        function updateSyncBadge(status) {
+            const badge = document.getElementById('sync-status-badge');
+            if (!badge) return;
+            if (status === 'synced') {
+                badge.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #14532D; background: #E8EFE6; padding: 4px 10px; border-radius: 999px; border: 1px solid #A3C99B;';
+                badge.innerHTML = '🟢 雲端已同步';
+            } else if (status === 'unsaved') {
+                badge.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #B45309; background: #FEF3C7; padding: 4px 10px; border-radius: 999px; border: 1px solid #FCD34D;';
+                badge.innerHTML = '🟡 有新修改未儲存';
+            } else if (status === 'syncing') {
+                badge.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #1D4ED8; background: #DBEAFE; padding: 4px 10px; border-radius: 999px; border: 1px solid #93C5FD;';
+                badge.innerHTML = '⏳ 正在同步雲端...';
+            } else if (status === 'error') {
+                badge.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #991B1B; background: #FEE2E2; padding: 4px 10px; border-radius: 999px; border: 1px solid #FCA5A5;';
+                badge.innerHTML = '❌ 雲端同步失敗';
+            }
         }
 
         async function loadCloudTrackingStatus() {
@@ -770,10 +796,11 @@
                         const cloudStore = JSON.parse(jsonStr);
 
                         const localStore = getTrackingStore();
-                        // Local edits take priority so background fetch never overwrites active user choices!
+                        // Deep merge: local values take precedence for keys edited locally
                         const mergedStore = { ...cloudStore, ...localStore };
                         localStorage.setItem('fda_apex_tracking_status', JSON.stringify(mergedStore));
                         updateKPICards();
+                        updateSyncBadge('synced');
                     }
                 }
             } catch (e) {
@@ -803,7 +830,7 @@
                 const contentB64 = btoa(binaryStr);
 
                 const putPayload = {
-                    message: 'User updated interactive tracking status',
+                    message: 'User updated interactive tracking status and notes',
                     content: contentB64
                 };
                 if (sha) putPayload.sha = sha;
@@ -824,6 +851,48 @@
             }
         }
 
+        let syncTimer = null;
+
+        function scheduleCloudSync() {
+            updateSyncBadge('unsaved');
+            if (syncTimer) clearTimeout(syncTimer);
+            syncTimer = setTimeout(() => {
+                forceCloudSync();
+            }, 1200);
+        }
+
+        let isSyncing = false;
+        let hasPendingSync = false;
+
+        async function forceCloudSync() {
+            if (syncTimer) {
+                clearTimeout(syncTimer);
+                syncTimer = null;
+            }
+            if (isSyncing) {
+                hasPendingSync = true;
+                return;
+            }
+            isSyncing = true;
+            updateSyncBadge('syncing');
+
+            const store = getTrackingStore();
+            const success = await saveCloudTrackingStatus(store);
+
+            isSyncing = false;
+            if (success) {
+                updateSyncBadge('synced');
+                showToast('✅ 追蹤變更已成功即時同步至雲端資料庫！');
+                if (hasPendingSync) {
+                    hasPendingSync = false;
+                    forceCloudSync();
+                }
+            } else {
+                updateSyncBadge('error');
+                showToast('❌ 雲端同步失敗，請檢查網路後重試', '#991B1B');
+            }
+        }
+
         async function manualSaveCloud() {
             const btn = document.getElementById('btn-save-cloud');
             if (btn) {
@@ -831,19 +900,10 @@
                 btn.innerHTML = '<span>⏳ 儲存中...</span>';
             }
             showToast('⏳ 正在同步追蹤狀態至 GitHub 雲端資料庫...', '#6E7E65');
-
-            const store = getTrackingStore();
-            const success = await saveCloudTrackingStatus(store);
-
+            await forceCloudSync();
             if (btn) {
                 btn.style.opacity = '1';
                 btn.innerHTML = '<span>💾 儲存追蹤變更</span>';
-            }
-
-            if (success) {
-                showToast('✅ 追蹤狀態已成功同步至雲端資料庫！(其他使用者開啟網頁皆可看到最新變更)');
-            } else {
-                showToast('❌ 雲端儲存失敗，請檢查網路連線或稍後重試', '#991B1B');
             }
         }
 
@@ -866,7 +926,7 @@
         function updateTrackingStatus(key, field, val, elem = null) {
             const store = getTrackingStore();
             if (!store[key]) {
-                store[key] = { is_closed: '待確認', is_complaint: '評估中' };
+                store[key] = { is_closed: '待確認', is_complaint: '評估中', note: '' };
             }
             store[key][field] = val;
             localStorage.setItem('fda_apex_tracking_status', JSON.stringify(store));
@@ -884,13 +944,17 @@
             }
 
             updateKPICards();
-            
-            showToast('🔄 追蹤選單已更新，正實時同步上傳雲端...', '#6E7E65');
-            saveCloudTrackingStatus(store).then(success => {
-                if (success) {
-                    showToast('✅ 最新追蹤變更已實時同步雲端資料庫！');
-                }
-            });
+            scheduleCloudSync();
+        }
+
+        function updateTrackingNote(key, noteVal) {
+            const store = getTrackingStore();
+            if (!store[key]) {
+                store[key] = { is_closed: '待確認', is_complaint: '評估中', note: '' };
+            }
+            store[key].note = noteVal;
+            localStorage.setItem('fda_apex_tracking_status', JSON.stringify(store));
+            scheduleCloudSync();
         }
 
         function getClosedSelectHtml(key, currentVal) {
@@ -922,6 +986,18 @@
                     <option value="是" ${val === '是' ? 'selected' : ''}>⚠️ 是 (轉客訴)</option>
                     <option value="否" ${val === '否' ? 'selected' : ''}>🟢 否 (非客訴)</option>
                 </select>
+            `;
+        }
+
+        function getNoteInputHtml(key, currentVal) {
+            const val = currentVal || '';
+            return `
+                <input type="text" 
+                       value="${escapeHtml(val)}" 
+                       placeholder="自由輸入備註/客訴單號..." 
+                       oninput="updateTrackingNote('${key}', this.value)" 
+                       onblur="forceCloudSync()"
+                       style="width: 100%; min-width: 150px; padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--border-color); background: #FFFFFF; font-size: 0.825rem; font-weight: 500; outline: none; color: #000000 !important;">
             `;
         }
 
@@ -1016,7 +1092,8 @@
                         item.device_evaluated_zh + ' ' +
                         item.remedial_action_zh + ' ' +
                         track.is_closed + ' ' +
-                        track.is_complaint
+                        track.is_complaint + ' ' +
+                        (track.note || '')
                     ).toLowerCase();
                     if (!fullText.includes(searchKeyword)) return false;
                 }
@@ -1034,7 +1111,7 @@
         function renderTable(data) {
             const tbody = document.getElementById('table-body');
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">無符合條件之通報紀錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 40px;">無符合條件之通報紀錄</td></tr>`;
                 return;
             }
 
@@ -1076,6 +1153,9 @@
                         </td>
                         <td>
                             ${getComplaintSelectHtml(item.mdr_report_key, track.is_complaint)}
+                        </td>
+                        <td>
+                            ${getNoteInputHtml(item.mdr_report_key, track.note)}
                         </td>
                         <td>
                             <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">檢視完整</button>
@@ -1140,6 +1220,10 @@
                                     <div>
                                         <div style="font-size: 0.75rem; font-weight: 700; margin-bottom: 4px;">⑥ 是否轉客訴流程？</div>
                                         ${getComplaintSelectHtml(item.mdr_report_key, track.is_complaint)}
+                                    </div>
+                                    <div style="grid-column: 1 / -1; margin-top: 4px;">
+                                        <div style="font-size: 0.75rem; font-weight: 700; margin-bottom: 4px;">⑦ 追蹤備註 / 客訴單號</div>
+                                        ${getNoteInputHtml(item.mdr_report_key, track.note)}
                                     </div>
                                 </div>
 
@@ -1207,7 +1291,7 @@
                 </div>
 
                 <div class="modal-section">
-                    <div class="modal-section-title">⑤ & ⑥ 案件追蹤與客訴管制狀態 (互動管理)</div>
+                    <div class="modal-section-title">⑤ ⑥ ⑦ 案件追蹤與客訴管制狀態 (互動管理)</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; background: #FAF7F2; padding: 16px; border-radius: 10px; border: 1.5px solid var(--accent-green);">
                         <div>
                             <label style="font-weight: 700; color: #000000 !important; display: block; margin-bottom: 6px;">⑤ 客戶是否結案？</label>
@@ -1216,6 +1300,10 @@
                         <div>
                             <label style="font-weight: 700; color: #000000 !important; display: block; margin-bottom: 6px;">⑥ 是否轉客訴流程？</label>
                             ${getComplaintSelectHtml(item.mdr_report_key, track.is_complaint)}
+                        </div>
+                        <div style="grid-column: 1 / -1; margin-top: 6px;">
+                            <label style="font-weight: 700; color: #000000 !important; display: block; margin-bottom: 6px;">⑦ 追蹤備註與處置說明 (可自由輸入):</label>
+                            ${getNoteInputHtml(item.mdr_report_key, track.note)}
                         </div>
                     </div>
                 </div>
@@ -1275,7 +1363,7 @@
             }
 
             const metaRows = [
-                ['FDA MAUDE 醫療器材不良事件通報紀錄分析與追蹤表 (含 4 大 ISO 管制指標 + 2 大追蹤指標)'],
+                ['FDA MAUDE 醫療器材不良事件通報紀錄分析與追蹤表 (含 4 大 ISO 管制指標 + 3 大追蹤指標)'],
                 ['FDA 查詢登記日期：', '2026-09-13', '查詢負責人 (人名)：', 'Regine'],
                 ['檢索對象 / 製造商：', 'APEX HEALTHCARE MFG. INC.', 'FDA MAUDE 官方搜尋首頁：', 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm'],
                 []
@@ -1287,7 +1375,7 @@
                 '品牌名稱', '型號', '目錄號', 'FDA 登記製造商',
                 '事件敘述 (繁體中文翻譯)', '事件敘述 (英文原文)',
                 '④ 製造商敘述結論 (繁體中文翻譯)', '④ 製造商敘述結論 (英文原文)',
-                '⑤ 追蹤：客戶是否結案？', '⑥ 追蹤：是否轉客訴流程？',
+                '⑤ 追蹤：客戶是否結案？', '⑥ 追蹤：是否轉客訴流程？', '⑦ 追蹤備註 / 客訴單號',
                 'FDA MAUDE 官方超連結 (點擊開啟)'
             ];
 
@@ -1300,7 +1388,7 @@
                     item.brand_name, item.model_number, item.catalog_number, item.manufacturer,
                     item.desc_zh, item.desc_en,
                     item.mfr_narrative_zh || '無補充說明', item.mfr_narrative_en || 'None',
-                    track.is_closed, track.is_complaint,
+                    track.is_closed, track.is_complaint, track.note || '',
                     fdaUrl
                 ];
             });
@@ -1319,7 +1407,6 @@
         updateKPICards();
         render();
         loadCloudTrackingStatus();
-        setInterval(loadCloudTrackingStatus, 15000);
     </script>
 </body>
 </html>
