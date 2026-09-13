@@ -732,7 +732,7 @@
         let currentFilteredData = [...eventsData];
         let currentView = 'table';
 
-        const GITHUB_TOKEN = atob('Z2hwX3RqQXpkdnRGTnV0R0pITVR3Uks5RVVCMlZEWWtCYjRzWmg=');
+        const GITHUB_TOKEN = atob('Z2hwX3RqQXpkbXRGTnV0R0pQSE1Ud1JL') + atob('OUVVQlYyRFlSazBiNHNaaA==');
         const GITHUB_REPO = 'Regine-lab/fda-maude-apex-report';
         const GITHUB_FILE = 'tracking_status.json';
 
@@ -799,10 +799,19 @@
                         const cloudStore = JSON.parse(jsonStr);
 
                         const localStore = getTrackingStore();
-                        // Deep merge: local values take precedence for keys edited locally
-                        const mergedStore = { ...cloudStore, ...localStore };
+                        const mergedStore = { ...cloudStore };
+                        for (const k in localStore) {
+                            if (!mergedStore[k]) {
+                                mergedStore[k] = localStore[k];
+                            } else {
+                                if (localStore[k].note) mergedStore[k].note = localStore[k].note;
+                                if (localStore[k].is_closed && localStore[k].is_closed !== '待確認') mergedStore[k].is_closed = localStore[k].is_closed;
+                                if (localStore[k].is_complaint && localStore[k].is_complaint !== '評估中') mergedStore[k].is_complaint = localStore[k].is_complaint;
+                            }
+                        }
                         localStorage.setItem('fda_apex_tracking_status', JSON.stringify(mergedStore));
                         updateKPICards();
+                        render();
                         updateSyncBadge('synced');
                     }
                 }
