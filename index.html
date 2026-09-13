@@ -750,14 +750,30 @@
 
         async function loadCloudTrackingStatus() {
             try {
-                const rawUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${GITHUB_FILE}?t=${Date.now()}`;
-                const resp = await fetch(rawUrl, { cache: 'no-cache' });
+                const getApiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+                const resp = await fetch(getApiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
                 if (resp.ok) {
-                    const cloudData = await resp.json();
-                    if (cloudData && typeof cloudData === 'object') {
-                        localStorage.setItem('fda_apex_tracking_status', JSON.stringify(cloudData));
+                    const data = await resp.json();
+                    if (data && data.content) {
+                        const rawB64 = data.content.replace(/\s/g, '');
+                        const binaryStr = atob(rawB64);
+                        const utf8Bytes = new Uint8Array(binaryStr.length);
+                        for (let i = 0; i < binaryStr.length; i++) {
+                            utf8Bytes[i] = binaryStr.charCodeAt(i);
+                        }
+                        const jsonStr = new TextDecoder().decode(utf8Bytes);
+                        const cloudStore = JSON.parse(jsonStr);
+
+                        const localStore = getTrackingStore();
+                        // Local edits take priority so background fetch never overwrites active user choices!
+                        const mergedStore = { ...cloudStore, ...localStore };
+                        localStorage.setItem('fda_apex_tracking_status', JSON.stringify(mergedStore));
                         updateKPICards();
-                        render();
                     }
                 }
             } catch (e) {
@@ -847,15 +863,27 @@
             }, 4000);
         }
 
-        function updateTrackingStatus(key, field, val) {
+        function updateTrackingStatus(key, field, val, elem = null) {
             const store = getTrackingStore();
             if (!store[key]) {
                 store[key] = { is_closed: '待確認', is_complaint: '評估中' };
             }
             store[key][field] = val;
             localStorage.setItem('fda_apex_tracking_status', JSON.stringify(store));
+
+            if (elem) {
+                if (field === 'is_closed') {
+                    if (val === '已結案') elem.style.cssText = 'background-color: #E8EFE6; color: #14532D !important; border: 1.5px solid #A3C99B; font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;';
+                    else if (val === '處理中') elem.style.cssText = 'background-color: #FEF3C7; color: #B45309 !important; border: 1.5px solid #FCD34D; font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;';
+                    else elem.style.cssText = 'background-color: #F3F4F6; color: #374151 !important; border: 1.5px solid #D1D5DB; font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;';
+                } else if (field === 'is_complaint') {
+                    if (val === '是') elem.style.cssText = 'background-color: #FEE2E2; color: #991B1B !important; border: 1.5px solid #FCA5A5; font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;';
+                    else if (val === '否') elem.style.cssText = 'background-color: #E8EFE6; color: #14532D !important; border: 1.5px solid #A3C99B; font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;';
+                    else elem.style.cssText = 'background-color: #FEF3C7; color: #B45309 !important; border: 1.5px solid #FCD34D; font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;';
+                }
+            }
+
             updateKPICards();
-            render();
             
             showToast('🔄 追蹤選單已更新，正實時同步上傳雲端...', '#6E7E65');
             saveCloudTrackingStatus(store).then(success => {
@@ -872,7 +900,7 @@
             if (val === '處理中') bgStyle = 'background-color: #FEF3C7; color: #B45309 !important; border: 1.5px solid #FCD34D;';
 
             return `
-                <select onchange="updateTrackingStatus('${key}', 'is_closed', this.value)" 
+                <select onchange="updateTrackingStatus('${key}', 'is_closed', this.value, this)" 
                         style="${bgStyle} font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;">
                     <option value="待確認" ${val === '待確認' ? 'selected' : ''}>⏳ 待確認</option>
                     <option value="處理中" ${val === '處理中' ? 'selected' : ''}>🔄 處理中</option>
@@ -888,7 +916,7 @@
             if (val === '否') bgStyle = 'background-color: #E8EFE6; color: #14532D !important; border: 1.5px solid #A3C99B;';
 
             return `
-                <select onchange="updateTrackingStatus('${key}', 'is_complaint', this.value)" 
+                <select onchange="updateTrackingStatus('${key}', 'is_complaint', this.value, this)" 
                         style="${bgStyle} font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;">
                     <option value="評估中" ${val === '評估中' ? 'selected' : ''}>🔍 評估中</option>
                     <option value="是" ${val === '是' ? 'selected' : ''}>⚠️ 是 (轉客訴)</option>
