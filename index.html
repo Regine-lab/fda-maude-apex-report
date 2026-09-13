@@ -350,13 +350,14 @@
         }
 
         .narrative-box {
-            background-color: #FAF7F2;
-            border-left: 3px solid var(--accent-green);
-            padding: 10px 14px;
-            border-radius: 4px;
+            background-color: #F7F4EE;
+            border-left: 4px solid var(--accent-green);
+            padding: 12px 16px;
+            border-radius: 6px;
             font-size: 0.875rem;
             margin-top: 6px;
-            color: #4A463F;
+            color: #111827;
+            font-weight: 500;
         }
 
         .narrative-en {
@@ -769,10 +770,10 @@
                             <span class="badge badge-model">${item.model_number}</span>
                         </td>
                         <td>
-                            <div style="font-weight: 500; color: #f1f5f9;">${item.desc_zh}</div>
+                            <div style="font-weight: 500; color: #111827; line-height: 1.5;">${item.desc_zh}</div>
                         </td>
                         <td>
-                            <div style="font-size: 0.85rem; color: #cbd5e1;">${item.mfr_narrative_zh || '無製造商補充敘述'}</div>
+                            <div style="font-size: 0.85rem; color: #111827; font-weight: 500; line-height: 1.5;">${item.mfr_narrative_zh || '無製造商補充敘述'}</div>
                         </td>
                         <td>
                             <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">檢視完整</button>
@@ -883,42 +884,42 @@
 
                 <div class="modal-section">
                     <div class="modal-section-title">4 大 ISO 品質管制指標</div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem; background: rgba(15, 23, 42, 0.7); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <div><span style="color: var(--text-muted);">① 通報類別 (Report Type):</span> <br><strong style="color: var(--accent-blue);">${item.type_of_report_zh}</strong></div>
-                        <div><span style="color: var(--text-muted);">② 機器檢測狀態 (Device Evaluated):</span> <br><strong style="color: var(--accent-emerald);">${item.device_evaluated_zh}</strong></div>
-                        <div><span style="color: var(--text-muted);">③ 矯正/補件動作 (Remedial Action):</span> <br><strong style="color: var(--warning-text);">${item.remedial_action_zh}</strong></div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem; background: #F7F4EE; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div><span style="color: var(--text-secondary);">① 通報類別 (Report Type):</span> <br><strong style="color: var(--accent-green);">${item.type_of_report_zh}</strong></div>
+                        <div><span style="color: var(--text-secondary);">② 機器檢測狀態 (Device Evaluated):</span> <br><strong style="color: #495642;">${item.device_evaluated_zh}</strong></div>
+                        <div><span style="color: var(--text-secondary);">③ 矯正/補件動作 (Remedial Action):</span> <br><strong style="color: var(--warning-text);">${item.remedial_action_zh}</strong></div>
                     </div>
                 </div>
 
                 <div class="modal-section">
                     <div class="modal-section-title">器材與製造商資訊 (Device & Manufacturer)</div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 0.85rem;">
-                        <div><span style="color: var(--text-muted);">通用產品名稱:</span> <br><strong>${item.generic_name}</strong></div>
-                        <div><span style="color: var(--text-muted);">型號 / 目錄號:</span> <br><strong>${item.model_number} / ${item.catalog_number}</strong></div>
-                        <div><span style="color: var(--text-muted);">MAUDE 登記製造商:</span> <br><strong>${item.manufacturer}</strong></div>
+                        <div><span style="color: var(--text-secondary);">通用產品名稱:</span> <br><strong style="color: #111827;">${item.generic_name}</strong></div>
+                        <div><span style="color: var(--text-secondary);">型號 / 目錄號:</span> <br><strong style="color: #111827;">${item.model_number} / ${item.catalog_number}</strong></div>
+                        <div><span style="color: var(--text-secondary);">MAUDE 登記製造商:</span> <br><strong style="color: #111827;">${item.manufacturer}</strong></div>
                     </div>
                 </div>
 
                 <div class="modal-section">
                     <div class="modal-section-title">事件/問題描述 (Description of Event or Problem)</div>
-                    <div style="background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--accent-blue); padding: 14px; border-radius: 8px; margin-bottom: 12px;">
-                        <div style="font-weight: 600; color: var(--accent-blue); margin-bottom: 6px;">繁體中文翻譯：</div>
-                        <div style="font-size: 0.95rem; color: #f8fafc; line-height: 1.6;">${item.desc_zh}</div>
+                    <div style="background: #F7F4EE; border-left: 4px solid var(--accent-green); padding: 14px; border-radius: 8px; margin-bottom: 12px;">
+                        <div style="font-weight: 600; color: var(--accent-green); margin-bottom: 6px;">繁體中文翻譯：</div>
+                        <div style="font-size: 0.95rem; color: #111827; font-weight: 500; line-height: 1.6;">${item.desc_zh}</div>
                     </div>
-                    <div style="background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 8px; font-size: 0.825rem; color: var(--text-secondary);">
-                        <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">英文原文 (FDA Raw Narrative):</div>
+                    <div style="background: #EFECE6; padding: 12px; border-radius: 8px; font-size: 0.825rem; color: #4B5563;">
+                        <div style="font-weight: 600; color: #374151; margin-bottom: 4px;">英文原文 (FDA Raw Narrative):</div>
                         <div>${item.desc_en}</div>
                     </div>
                 </div>
 
                 <div class="modal-section">
                     <div class="modal-section-title">④ 製造商敘述結論 (Manufacturer Narrative & Conclusion)</div>
-                    <div style="background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--accent-indigo); padding: 14px; border-radius: 8px; margin-bottom: 12px;">
-                        <div style="font-weight: 600; color: var(--accent-indigo); margin-bottom: 6px;">繁體中文翻譯：</div>
-                        <div style="font-size: 0.9rem; color: #f8fafc; line-height: 1.6;">${item.mfr_narrative_zh || '無補充製造商說明'}</div>
+                    <div style="background: #F7F4EE; border-left: 4px solid #8B5E34; padding: 14px; border-radius: 8px; margin-bottom: 12px;">
+                        <div style="font-weight: 600; color: #8B5E34; margin-bottom: 6px;">繁體中文翻譯：</div>
+                        <div style="font-size: 0.9rem; color: #111827; font-weight: 500; line-height: 1.6;">${item.mfr_narrative_zh || '無補充製造商說明'}</div>
                     </div>
-                    <div style="background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 8px; font-size: 0.825rem; color: var(--text-secondary);">
-                        <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">英文原文 (FDA Raw Narrative):</div>
+                    <div style="background: #EFECE6; padding: 12px; border-radius: 8px; font-size: 0.825rem; color: #4B5563;">
+                        <div style="font-weight: 600; color: #374151; margin-bottom: 4px;">英文原文 (FDA Raw Narrative):</div>
                         <div>${item.mfr_narrative_en || 'None'}</div>
                     </div>
                 </div>
