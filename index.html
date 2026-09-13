@@ -640,13 +640,14 @@
                 <thead>
                     <tr>
                         <th style="width: 50px;"># (正序)</th>
+                        <th style="width: 145px;">FDA 通報編號<br>(Report No. / Key)</th>
                         <th style="width: 100px;">通報日期</th>
                         <th style="width: 120px;">① 通報類別</th>
                         <th style="width: 130px;">② 機器檢測狀態</th>
                         <th style="width: 130px;">③ 矯正/補件動作</th>
                         <th style="width: 140px;">品牌與型號</th>
-                        <th style="min-width: 240px;">事件敘述 (繁體中文翻譯)</th>
-                        <th style="min-width: 240px;">④ 製造商敘述結論 (繁體中文翻譯)</th>
+                        <th style="min-width: 220px;">事件敘述 (繁體中文翻譯)</th>
+                        <th style="min-width: 220px;">④ 製造商敘述結論 (繁體中文翻譯)</th>
                         <th style="width: 135px; background-color: #495642;">⑤ 客戶是否結案？ (互動選單)</th>
                         <th style="width: 135px; background-color: #495642;">⑥ 是否轉客訴流程？ (互動選單)</th>
                         <th style="width: 100px;">FDA 連結</th>
@@ -850,7 +851,7 @@
         function renderTable(data) {
             const tbody = document.getElementById('table-body');
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">無符合條件之通報紀錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">無符合條件之通報紀錄</td></tr>`;
                 return;
             }
 
@@ -862,9 +863,13 @@
 
                 return `
                     <tr>
-                        <td><strong>${item.id}</strong></td>
+                        <td><strong>#${item.id}</strong></td>
                         <td>
-                            <div>${item.date_received}</div>
+                            <div style="font-weight: 700; color: #000000 !important; font-family: monospace; font-size: 0.85rem; word-break: break-all;">${item.report_number || 'N/A'}</div>
+                            <div style="font-size: 0.75rem; color: #4B5563; margin-top: 3px;">Key: <a href="${fdaUrl}" target="_blank" class="link-active" style="font-weight: 600;">${item.mdr_report_key} 🔗</a></div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: #000000 !important;">${item.date_received}</div>
                             <div style="font-size: 0.75rem; color: #6B7280;">發生: ${item.date_of_event}</div>
                         </td>
                         <td>
