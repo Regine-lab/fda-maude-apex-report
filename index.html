@@ -779,32 +779,40 @@
 
         async function loadCloudTrackingStatus() {
             try {
-                const getApiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
-                const resp = await fetch(getApiUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data && data.content) {
-                        const rawB64 = data.content.replace(/\s/g, '');
-                        const binaryStr = atob(rawB64);
-                        const utf8Bytes = new Uint8Array(binaryStr.length);
-                        for (let i = 0; i < binaryStr.length; i++) {
-                            utf8Bytes[i] = binaryStr.charCodeAt(i);
-                        }
-                        const jsonStr = new TextDecoder().decode(utf8Bytes);
-                        const cloudStore = JSON.parse(jsonStr);
+                const rawUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${GITHUB_FILE}?t=${Date.now()}`;
+                let resp = await fetch(rawUrl, { cache: 'no-cache' });
+                let cloudStore = null;
 
-                        if (cloudStore && typeof cloudStore === 'object') {
-                            localStorage.setItem('fda_apex_tracking_status', JSON.stringify(cloudStore));
-                            updateKPICards();
-                            render();
-                            updateSyncBadge('synced');
+                if (resp.ok) {
+                    cloudStore = await resp.json();
+                } else {
+                    const getApiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+                    const apiResp = await fetch(getApiUrl, {
+                        headers: {
+                            'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    if (apiResp.ok) {
+                        const data = await apiResp.json();
+                        if (data && data.content) {
+                            const rawB64 = data.content.replace(/\s/g, '');
+                            const binaryStr = atob(rawB64);
+                            const utf8Bytes = new Uint8Array(binaryStr.length);
+                            for (let i = 0; i < binaryStr.length; i++) {
+                                utf8Bytes[i] = binaryStr.charCodeAt(i);
+                            }
+                            const jsonStr = new TextDecoder().decode(utf8Bytes);
+                            cloudStore = JSON.parse(jsonStr);
                         }
                     }
+                }
+
+                if (cloudStore && typeof cloudStore === 'object') {
+                    localStorage.setItem('fda_apex_tracking_status', JSON.stringify(cloudStore));
+                    updateKPICards();
+                    render();
+                    updateSyncBadge('synced');
                 }
             } catch (e) {
                 console.log('Using local tracking fallback:', e);
