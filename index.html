@@ -300,8 +300,18 @@
         td {
             padding: 16px;
             border-bottom: 1px solid #EDE8E1;
-            color: var(--text-primary);
+            color: #000000 !important;
             vertical-align: top;
+        }
+
+        td div, td p, td span:not(.badge):not(.action-btn):not(.link-active) {
+            color: #000000 !important;
+        }
+
+        .text-zh {
+            color: #000000 !important;
+            font-weight: 500;
+            line-height: 1.6;
         }
 
         tr:nth-child(even) td {
@@ -323,26 +333,26 @@
 
         .badge-injury {
             background-color: var(--danger-bg);
-            color: var(--danger-text);
+            color: #C05656 !important;
             border: 1px solid var(--danger-border);
         }
 
         .badge-malfunction {
             background-color: var(--warning-bg);
-            color: var(--warning-text);
+            color: #D97706 !important;
             border: 1px solid var(--warning-border);
         }
 
         .badge-model {
             background-color: #F1E3D3;
-            color: #8B5E34;
+            color: #8B5E34 !important;
             border: 1px solid #E6CDB5;
             font-family: monospace;
         }
 
         .badge-status {
             background-color: #E8EFE6;
-            color: #495642;
+            color: #495642 !important;
             border: 1px solid #C4D4C0;
             font-size: 0.75rem;
             padding: 3px 8px;
@@ -356,13 +366,17 @@
             border-radius: 6px;
             font-size: 0.875rem;
             margin-top: 6px;
-            color: #111827;
+            color: #000000 !important;
             font-weight: 500;
+        }
+
+        .narrative-box * {
+            color: #000000 !important;
         }
 
         .narrative-en {
             font-size: 0.8rem;
-            color: var(--text-muted);
+            color: #4B5563 !important;
             margin-top: 8px;
             font-style: italic;
         }
@@ -770,10 +784,10 @@
                             <span class="badge badge-model">${item.model_number}</span>
                         </td>
                         <td>
-                            <div style="font-weight: 500; color: #111827; line-height: 1.5;">${item.desc_zh}</div>
+                            <div class="text-zh" style="font-weight: 500; color: #000000 !important; line-height: 1.6; font-size: 0.9rem;">${item.desc_zh}</div>
                         </td>
                         <td>
-                            <div style="font-size: 0.85rem; color: #111827; font-weight: 500; line-height: 1.5;">${item.mfr_narrative_zh || '無製造商補充敘述'}</div>
+                            <div class="text-zh" style="font-size: 0.875rem; color: #000000 !important; font-weight: 500; line-height: 1.6;">${item.mfr_narrative_zh || '無製造商補充敘述'}</div>
                         </td>
                         <td>
                             <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">檢視完整</button>
