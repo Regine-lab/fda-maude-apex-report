@@ -577,7 +577,7 @@
             <div class="filter-group">
                 <div class="filter-item">
                     <label for="filter-type">事件類型</label>
-                    <select id="filter-type">
+                    <select id="filter-type" onchange="render()">
                         <option value="ALL">全部類型 (All)</option>
                         <option value="INJURY">人員傷害 (Injury)</option>
                         <option value="MALFUNCTION">設備故障 (Malfunction)</option>
@@ -585,7 +585,7 @@
                 </div>
                 <div class="filter-item">
                     <label for="filter-year">通報年份</label>
-                    <select id="filter-year">
+                    <select id="filter-year" onchange="render()">
                         <option value="ALL">全部年份 (All)</option>
                         <option value="2026">2026 年</option>
                         <option value="2025">2025 年</option>
@@ -593,7 +593,7 @@
                 </div>
                 <div class="filter-item">
                     <label for="filter-model">產品型號</label>
-                    <select id="filter-model">
+                    <select id="filter-model" onchange="render()">
                         <option value="ALL">全部型號 (All Models)</option>
                         <option value="HOY-ADVANCE-E">HOY-ADVANCE-E (Advance Lift)</option>
                         <option value="HOY-ELEVATE">HOY-ELEVATE-S / WSC (Elevate Lift)</option>
@@ -603,11 +603,29 @@
                         <option value="C-HLA-2">C-HLA-2 (Hydraulic)</option>
                     </select>
                 </div>
+                <div class="filter-item">
+                    <label for="filter-closed">追蹤① 客戶是否結案</label>
+                    <select id="filter-closed" onchange="render()">
+                        <option value="ALL">全部狀態 (All)</option>
+                        <option value="待確認">待確認 (Pending)</option>
+                        <option value="處理中">處理中 (In Progress)</option>
+                        <option value="已結案">已結案 (Closed)</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filter-complaint">追蹤② 是否轉客訴流程</label>
+                    <select id="filter-complaint" onchange="render()">
+                        <option value="ALL">全部狀態 (All)</option>
+                        <option value="評估中">評估中 (Evaluating)</option>
+                        <option value="是">是 (Yes - 轉客訴)</option>
+                        <option value="否">否 (No - 非客訴)</option>
+                    </select>
+                </div>
             </div>
             <div class="filter-group">
                 <div class="filter-item">
                     <label for="search-input">關鍵字搜尋</label>
-                    <input type="text" id="search-input" placeholder="搜尋 MDR Key, 描述或零件關鍵字...">
+                    <input type="text" id="search-input" oninput="render()" placeholder="搜尋 MDR Key, 描述或零件關鍵字...">
                 </div>
                 <div class="view-toggle">
                     <button class="view-btn active" id="btn-view-table" onclick="setViewMode('table')">表格檢視</button>
@@ -622,14 +640,16 @@
                 <thead>
                     <tr>
                         <th style="width: 50px;"># (正序)</th>
-                        <th style="width: 110px;">通報日期</th>
-                        <th style="width: 130px;">① 通報類別</th>
-                        <th style="width: 150px;">② 機器檢測狀態</th>
-                        <th style="width: 140px;">③ 矯正/補件動作</th>
-                        <th style="width: 150px;">品牌與型號</th>
-                        <th>事件敘述 (繁體中文翻譯)</th>
-                        <th>④ 製造商敘述結論 (繁體中文翻譯)</th>
-                        <th style="width: 110px;">FDA 連結</th>
+                        <th style="width: 100px;">通報日期</th>
+                        <th style="width: 120px;">① 通報類別</th>
+                        <th style="width: 130px;">② 機器檢測狀態</th>
+                        <th style="width: 130px;">③ 矯正/補件動作</th>
+                        <th style="width: 140px;">品牌與型號</th>
+                        <th style="min-width: 240px;">事件敘述 (繁體中文翻譯)</th>
+                        <th style="min-width: 240px;">④ 製造商敘述結論 (繁體中文翻譯)</th>
+                        <th style="width: 135px; background-color: #495642;">⑤ 客戶是否結案？ (互動選單)</th>
+                        <th style="width: 135px; background-color: #495642;">⑥ 是否轉客訴流程？ (互動選單)</th>
+                        <th style="width: 100px;">FDA 連結</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -655,7 +675,7 @@
 
         <!-- Footer -->
         <footer>
-            <p> Regine Codex Agent | 醫療器材 ISO 系統管制專用分析報告</p>
+            <p> Regine Codex Agent | 醫療器材 ISO 系統管制專用分析與動態追蹤報告</p>
             <p style="margin-top: 4px;"><a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm" target="_blank" class="link-active">FDA MAUDE 官方資料庫首頁 🔗</a></p>
         </footer>
     </div>
@@ -665,20 +685,80 @@
         let currentFilteredData = [...eventsData];
         let currentView = 'table';
 
+        function getTrackingStore() {
+            try {
+                return JSON.parse(localStorage.getItem('fda_apex_tracking_status')) || {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function getTrackingStatus(key) {
+            const store = getTrackingStore();
+            return store[key] || { is_closed: '待確認', is_complaint: '評估中' };
+        }
+
+        function updateTrackingStatus(key, field, val) {
+            const store = getTrackingStore();
+            if (!store[key]) {
+                store[key] = { is_closed: '待確認', is_complaint: '評估中' };
+            }
+            store[key][field] = val;
+            localStorage.setItem('fda_apex_tracking_status', JSON.stringify(store));
+            updateKPICards();
+            render();
+        }
+
+        function getClosedSelectHtml(key, currentVal) {
+            const val = currentVal || '待確認';
+            let bgStyle = 'background-color: #F3F4F6; color: #374151 !important; border: 1.5px solid #D1D5DB;';
+            if (val === '已結案') bgStyle = 'background-color: #E8EFE6; color: #14532D !important; border: 1.5px solid #A3C99B;';
+            if (val === '處理中') bgStyle = 'background-color: #FEF3C7; color: #B45309 !important; border: 1.5px solid #FCD34D;';
+
+            return `
+                <select onchange="updateTrackingStatus('${key}', 'is_closed', this.value)" 
+                        style="${bgStyle} font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;">
+                    <option value="待確認" ${val === '待確認' ? 'selected' : ''}>⏳ 待確認</option>
+                    <option value="處理中" ${val === '處理中' ? 'selected' : ''}>🔄 處理中</option>
+                    <option value="已結案" ${val === '已結案' ? 'selected' : ''}>✅ 已結案</option>
+                </select>
+            `;
+        }
+
+        function getComplaintSelectHtml(key, currentVal) {
+            const val = currentVal || '評估中';
+            let bgStyle = 'background-color: #FEF3C7; color: #B45309 !important; border: 1.5px solid #FCD34D;';
+            if (val === '是') bgStyle = 'background-color: #FEE2E2; color: #991B1B !important; border: 1.5px solid #FCA5A5;';
+            if (val === '否') bgStyle = 'background-color: #E8EFE6; color: #14532D !important; border: 1.5px solid #A3C99B;';
+
+            return `
+                <select onchange="updateTrackingStatus('${key}', 'is_complaint', this.value)" 
+                        style="${bgStyle} font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;">
+                    <option value="評估中" ${val === '評估中' ? 'selected' : ''}>🔍 評估中</option>
+                    <option value="是" ${val === '是' ? 'selected' : ''}>⚠️ 是 (轉客訴)</option>
+                    <option value="否" ${val === '否' ? 'selected' : ''}>🟢 否 (非客訴)</option>
+                </select>
+            `;
+        }
+
         function updateKPICards() {
             const total = eventsData.length;
             let injuryCount = 0;
             let malfunctionCount = 0;
-            let y2025Count = 0;
-            let y2026Count = 0;
+            let closedCount = 0;
+            let inProgressCount = 0;
+            let complaintYesCount = 0;
 
             eventsData.forEach(ev => {
                 const etype = (ev.event_type_en || '').toUpperCase();
                 if (etype.includes('INJURY')) injuryCount++;
                 else if (etype.includes('MALFUNCTION')) malfunctionCount++;
 
-                if (ev.year === '2025') y2025Count++;
-                else if (ev.year === '2026') y2026Count++;
+                const track = getTrackingStatus(ev.mdr_report_key);
+                if (track.is_closed === '已結案') closedCount++;
+                else if (track.is_closed === '處理中') inProgressCount++;
+
+                if (track.is_complaint === '是') complaintYesCount++;
             });
 
             const injuryPct = total > 0 ? ((injuryCount / total) * 100).toFixed(1) : 0;
@@ -688,28 +768,28 @@
             kpiContainer.innerHTML = `
                 <div class="kpi-card">
                     <div class="kpi-label">總通報件數 (Total MDRs)</div>
-                    <div class="kpi-value" style="color: var(--accent-blue);">${total}</div>
+                    <div class="kpi-value" style="color: #2563EB;">${total}</div>
                     <div class="kpi-subtext">2025年至今之不重複事件數</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">人員傷害事件 (Injuries)</div>
-                    <div class="kpi-value" style="color: var(--danger-text);">${injuryCount}</div>
+                    <div class="kpi-value" style="color: #991B1B;">${injuryCount}</div>
                     <div class="kpi-subtext">占比 ${injuryPct}%</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">設備故障事件 (Malfunctions)</div>
-                    <div class="kpi-value" style="color: var(--warning-text);">${malfunctionCount}</div>
+                    <div class="kpi-value" style="color: #92400E;">${malfunctionCount}</div>
                     <div class="kpi-subtext">占比 ${malfunctionPct}%</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">2025 年度通報</div>
-                    <div class="kpi-value" style="color: var(--text-primary);">${y2025Count}</div>
-                    <div class="kpi-subtext">2025-01 至 2025-12</div>
+                <div class="kpi-card" style="border-left: 4px solid #14532D;">
+                    <div class="kpi-label">⑤ 客戶案件結案進度</div>
+                    <div class="kpi-value" style="color: #14532D;">${closedCount} <span style="font-size: 1rem; color: #4B5563;">/ ${total} 結案</span></div>
+                    <div class="kpi-subtext">處理中 ${inProgressCount} 筆 | 待確認 ${total - closedCount - inProgressCount} 筆</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">2026 年度通報</div>
-                    <div class="kpi-value" style="color: var(--accent-indigo);">${y2026Count}</div>
-                    <div class="kpi-subtext">截至 2026-09-13</div>
+                <div class="kpi-card" style="border-left: 4px solid #991B1B;">
+                    <div class="kpi-label">⑥ 是否轉客訴流程</div>
+                    <div class="kpi-value" style="color: #991B1B;">${complaintYesCount} <span style="font-size: 1rem; color: #4B5563;">筆轉客訴</span></div>
+                    <div class="kpi-subtext">已確認納入客訴管制流程</div>
                 </div>
             `;
         }
@@ -718,9 +798,13 @@
             const typeFilter = document.getElementById('filter-type').value;
             const yearFilter = document.getElementById('filter-year').value;
             const modelFilter = document.getElementById('filter-model').value;
+            const closedFilter = document.getElementById('filter-closed').value;
+            const complaintFilter = document.getElementById('filter-complaint').value;
             const searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
 
             currentFilteredData = eventsData.filter(item => {
+                const track = getTrackingStatus(item.mdr_report_key);
+
                 if (typeFilter !== 'ALL') {
                     if (typeFilter === 'INJURY' && !item.event_type_en.toUpperCase().includes('INJURY')) return false;
                     if (typeFilter === 'MALFUNCTION' && !item.event_type_en.toUpperCase().includes('MALFUNCTION')) return false;
@@ -731,6 +815,9 @@
                 if (modelFilter !== 'ALL') {
                     if (!item.model_number.toUpperCase().includes(modelFilter) && !item.brand_name.toUpperCase().includes(modelFilter)) return false;
                 }
+
+                if (closedFilter !== 'ALL' && track.is_closed !== closedFilter) return false;
+                if (complaintFilter !== 'ALL' && track.is_complaint !== complaintFilter) return false;
 
                 if (searchKeyword) {
                     const fullText = (
@@ -743,7 +830,9 @@
                         item.mfr_narrative_zh + ' ' +
                         item.type_of_report_zh + ' ' +
                         item.device_evaluated_zh + ' ' +
-                        item.remedial_action_zh
+                        item.remedial_action_zh + ' ' +
+                        track.is_closed + ' ' +
+                        track.is_complaint
                     ).toLowerCase();
                     if (!fullText.includes(searchKeyword)) return false;
                 }
@@ -761,7 +850,7 @@
         function renderTable(data) {
             const tbody = document.getElementById('table-body');
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">無符合條件之通報紀錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">無符合條件之通報紀錄</td></tr>`;
                 return;
             }
 
@@ -769,13 +858,14 @@
                 const isInjury = item.event_type_en.toUpperCase().includes('INJURY');
                 const badgeClass = isInjury ? 'badge-injury' : 'badge-malfunction';
                 const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
+                const track = getTrackingStatus(item.mdr_report_key);
 
                 return `
                     <tr>
                         <td><strong>${item.id}</strong></td>
                         <td>
                             <div>${item.date_received}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">發生: ${item.date_of_event}</div>
+                            <div style="font-size: 0.75rem; color: #6B7280;">發生: ${item.date_of_event}</div>
                         </td>
                         <td>
                             <span class="badge ${badgeClass}" style="margin-bottom: 4px;">${item.event_type_zh}</span><br>
@@ -792,6 +882,12 @@
                         </td>
                         <td>
                             <div class="text-zh" style="font-size: 0.9rem; color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 700 !important; line-height: 1.6;">${item.mfr_narrative_zh || '無製造商補充敘述'}</div>
+                        </td>
+                        <td>
+                            ${getClosedSelectHtml(item.mdr_report_key, track.is_closed)}
+                        </td>
+                        <td>
+                            ${getComplaintSelectHtml(item.mdr_report_key, track.is_complaint)}
                         </td>
                         <td>
                             <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">檢視完整</button>
@@ -815,6 +911,7 @@
                 const isInjury = item.event_type_en.toUpperCase().includes('INJURY');
                 const badgeClass = isInjury ? 'badge-injury' : 'badge-malfunction';
                 const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
+                const track = getTrackingStatus(item.mdr_report_key);
 
                 return `
                     <div class="event-card">
@@ -847,6 +944,17 @@
                                     <span class="val">${item.date_received}</span>
                                 </div>
                                 
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; background: #FAF7F2; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <div>
+                                        <div style="font-size: 0.75rem; font-weight: 700; margin-bottom: 4px;">⑤ 客戶是否結案？</div>
+                                        ${getClosedSelectHtml(item.mdr_report_key, track.is_closed)}
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.75rem; font-weight: 700; margin-bottom: 4px;">⑥ 是否轉客訴流程？</div>
+                                        ${getComplaintSelectHtml(item.mdr_report_key, track.is_complaint)}
+                                    </div>
+                                </div>
+
                                 <div class="narrative-box" style="margin-top: 12px;">
                                     <strong style="color: #000000 !important;">事件描述 (中文翻譯)：</strong><br>
                                     <div style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 700 !important; font-size: 0.925rem; margin-top: 4px;">${item.desc_zh}</div>
@@ -886,6 +994,7 @@
             const isInjury = item.event_type_en.toUpperCase().includes('INJURY');
             const badgeClass = isInjury ? 'badge-injury' : 'badge-malfunction';
             const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
+            const track = getTrackingStatus(item.mdr_report_key);
 
             const modalHtml = `
                 <div style="margin-bottom: 16px;">
@@ -906,6 +1015,20 @@
                         <div><span style="color: var(--text-secondary);">① 通報類別 (Report Type):</span> <br><strong style="color: var(--accent-green);">${item.type_of_report_zh}</strong></div>
                         <div><span style="color: var(--text-secondary);">② 機器檢測狀態 (Device Evaluated):</span> <br><strong style="color: #495642;">${item.device_evaluated_zh}</strong></div>
                         <div><span style="color: var(--text-secondary);">③ 矯正/補件動作 (Remedial Action):</span> <br><strong style="color: var(--warning-text);">${item.remedial_action_zh}</strong></div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">⑤ & ⑥ 案件追蹤與客訴管制狀態 (互動管理)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; background: #FAF7F2; padding: 16px; border-radius: 10px; border: 1.5px solid var(--accent-green);">
+                        <div>
+                            <label style="font-weight: 700; color: #000000 !important; display: block; margin-bottom: 6px;">⑤ 客戶是否結案？</label>
+                            ${getClosedSelectHtml(item.mdr_report_key, track.is_closed)}
+                        </div>
+                        <div>
+                            <label style="font-weight: 700; color: #000000 !important; display: block; margin-bottom: 6px;">⑥ 是否轉客訴流程？</label>
+                            ${getComplaintSelectHtml(item.mdr_report_key, track.is_complaint)}
+                        </div>
                     </div>
                 </div>
 
@@ -964,7 +1087,7 @@
             }
 
             const metaRows = [
-                ['FDA MAUDE 醫療器材不良事件通報紀錄分析表 (含 4 大 ISO 管制指標)'],
+                ['FDA MAUDE 醫療器材不良事件通報紀錄分析與追蹤表 (含 4 大 ISO 管制指標 + 2 大追蹤指標)'],
                 ['FDA 查詢登記日期：', '2026-09-13', '查詢負責人 (人名)：', 'Regine'],
                 ['檢索對象 / 製造商：', 'APEX HEALTHCARE MFG. INC.', 'FDA MAUDE 官方搜尋首頁：', 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm'],
                 []
@@ -976,29 +1099,31 @@
                 '品牌名稱', '型號', '目錄號', 'FDA 登記製造商',
                 '事件敘述 (繁體中文翻譯)', '事件敘述 (英文原文)',
                 '④ 製造商敘述結論 (繁體中文翻譯)', '④ 製造商敘述結論 (英文原文)',
+                '⑤ 追蹤：客戶是否結案？', '⑥ 追蹤：是否轉客訴流程？',
                 'FDA MAUDE 官方超連結 (點擊開啟)'
             ];
 
-            const exportRows = currentFilteredData.map(item => [
-                item.id, item.mdr_report_key, item.report_number, item.date_received, item.date_of_event, item.year,
-                item.event_type_zh, item.type_of_report_zh, item.device_evaluated_zh, item.remedial_action_zh,
-                item.brand_name, item.model_number, item.catalog_number, item.manufacturer,
-                item.desc_zh, item.desc_en, item.mfr_narrative_zh, item.mfr_narrative_en,
-                `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`
-            ]);
+            const exportRows = currentFilteredData.map(item => {
+                const track = getTrackingStatus(item.mdr_report_key);
+                const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
+                return [
+                    item.id, item.mdr_report_key, item.report_number, item.date_received, item.date_of_event, item.year,
+                    item.event_type_zh, item.type_of_report_zh, item.device_evaluated_zh, item.remedial_action_zh,
+                    item.brand_name, item.model_number, item.catalog_number, item.manufacturer,
+                    item.desc_zh, item.desc_en,
+                    item.mfr_narrative_zh || '無補充說明', item.mfr_narrative_en || 'None',
+                    track.is_closed, track.is_complaint,
+                    fdaUrl
+                ];
+            });
 
-            const finalSheetData = [...metaRows, dataHeaders, ...exportRows];
-            const worksheet = XLSX.utils.aoa_to_sheet(finalSheetData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "ISO管制指標對照表");
-
-            XLSX.writeFile(workbook, `FDA_MAUDE_APEX_ISO_Control_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
+            const worksheetData = [...metaRows, dataHeaders, ...exportRows];
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "FDA MAUDE 追蹤紀錄表");
+            XLSX.writeFile(wb, `FDA_MAUDE_APEX_Interactive_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
-        document.getElementById('filter-type').addEventListener('change', render);
-        document.getElementById('filter-year').addEventListener('change', render);
-        document.getElementById('filter-model').addEventListener('change', render);
-        document.getElementById('search-input').addEventListener('input', render);
         document.getElementById('modal-overlay').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
