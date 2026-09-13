@@ -1,13 +1,8 @@
 {
   "21527206": {
-    "is_closed": "已結案",
-    "is_complaint": "是",
+    "is_closed": "待確認",
+    "is_complaint": "評估中",
     "note": "c2601"
-  },
-  "21527207": {
-    "is_closed": "已結案",
-    "is_complaint": "是",
-    "note": ""
   },
   "50212955": {
     "is_closed": "處理中",
