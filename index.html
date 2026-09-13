@@ -798,21 +798,12 @@
                         const jsonStr = new TextDecoder().decode(utf8Bytes);
                         const cloudStore = JSON.parse(jsonStr);
 
-                        const localStore = getTrackingStore();
-                        const mergedStore = { ...cloudStore };
-                        for (const k in localStore) {
-                            if (!mergedStore[k]) {
-                                mergedStore[k] = localStore[k];
-                            } else {
-                                if (localStore[k].note) mergedStore[k].note = localStore[k].note;
-                                if (localStore[k].is_closed && localStore[k].is_closed !== '待確認') mergedStore[k].is_closed = localStore[k].is_closed;
-                                if (localStore[k].is_complaint && localStore[k].is_complaint !== '評估中') mergedStore[k].is_complaint = localStore[k].is_complaint;
-                            }
+                        if (cloudStore && typeof cloudStore === 'object') {
+                            localStorage.setItem('fda_apex_tracking_status', JSON.stringify(cloudStore));
+                            updateKPICards();
+                            render();
+                            updateSyncBadge('synced');
                         }
-                        localStorage.setItem('fda_apex_tracking_status', JSON.stringify(mergedStore));
-                        updateKPICards();
-                        render();
-                        updateSyncBadge('synced');
                     }
                 }
             } catch (e) {
