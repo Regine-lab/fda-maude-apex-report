@@ -4,6 +4,11 @@
     "is_complaint": "是",
     "note": "c2576"
   },
+  "21527207": {
+    "is_closed": "待確認",
+    "is_complaint": "是",
+    "note": ""
+  },
   "50212955": {
     "is_closed": "處理中",
     "is_complaint": "是",
