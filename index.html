@@ -751,7 +751,7 @@
         async function loadCloudTrackingStatus() {
             try {
                 const rawUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${GITHUB_FILE}?t=${Date.now()}`;
-                const resp = await fetch(rawUrl);
+                const resp = await fetch(rawUrl, { cache: 'no-cache' });
                 if (resp.ok) {
                     const cloudData = await resp.json();
                     if (cloudData && typeof cloudData === 'object') {
