@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDA MAUDE 通報事件分析報告 | APEX HEALTHCARE MFG. INC. (2025-2026)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #38bdf8;
+            --accent-indigo: #818cf8;
+            --accent-emerald: #34d399;
+            --danger-bg: rgba(244, 63, 94, 0.15);
+            --danger-text: #fb7185;
+            --danger-border: rgba(244, 63, 94, 0.3);
+            --warning-bg: rgba(245, 158, 11, 0.15);
+            --warning-text: #fbbf24;
+            --warning-border: rgba(245, 158, 11, 0.3);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1450px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-blue), var(--accent-indigo));
+        }
+
+        .header-title-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 span.badge-header {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-weight: 500;
+        }
+
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .meta-tag-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.825rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 16px;
+        }
+
+        .meta-tag-box strong {
+            color: var(--accent-blue);
+        }
+
+        .btn-excel {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-excel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-blue);
+        }
+
+        .kpi-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .kpi-subtext {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .controls-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-item label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        select, input[type="text"] {
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: var(--accent-blue);
+        }
+
+        input[type="text"] {
+            min-width: 260px;
+        }
+
+        .view-toggle {
+            display: flex;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 3px;
+        }
+
+        .view-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background-color: var(--bg-card-hover);
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .table-container {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        th {
+            background-color: #162032;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            vertical-align: top;
+        }
+
+        tr:hover td {
+            background-color: rgba(51, 65, 85, 0.4);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .badge-injury {
+            background-color: var(--danger-bg);
+            color: var(--danger-text);
+            border: 1px solid var(--danger-border);
+        }
+
+        .badge-malfunction {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+            border: 1px solid var(--warning-border);
+        }
+
+        .badge-model {
+            background-color: rgba(129, 140, 248, 0.15);
+            color: var(--accent-indigo);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            font-family: monospace;
+        }
+
+        .badge-status {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .narrative-box {
+            background-color: rgba(15, 23, 42, 0.6);
+            border-left: 3px solid var(--accent-blue);
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-top: 6px;
+            color: #cbd5e1;
+        }
+
+        .narrative-en {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .action-btn {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(56, 189, 248, 0.25);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 20px;
+        }
+
+        .event-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .event-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-blue);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .card-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-section {
+            margin-top: 20px;
+        }
+
+        .modal-section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .fda-notice {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.8rem;
+            color: var(--warning-text);
+            margin-bottom: 20px;
+        }
+
+        a.link-active {
+            color: var(--accent-blue);
+            text-decoration: underline;
+        }
+
+        a.link-active:hover {
+            color: #7dd3fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-title-group">
+                <div class="header-title">
+                    <h1>
+                        FDA MAUDE 通報事件分析報告 
+                        <span class="badge-header">APEX HEALTHCARE MFG. INC.</span>
+                    </h1>
+                    <p>醫療器材不良事件資料庫統計與 4 大 ISO 管制指標對照表 (2025年 - 2026年9月13日)</p>
+                </div>
+                <div class="header-actions">
+                    <div class="meta-tag-box">
+                        <div>FDA 查詢登記日期：<strong>2026-09-04</strong></div>
+                        <div>查詢負責人：<strong>Carol</strong></div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 4px;">
+                        <button class="btn-excel" onclick="exportToExcel()">
+                            <span>📥 匯出動態 Excel (.xlsx)</span>
+                        </button>
+                        <a href="fda_maude_apex_2025_2026_iso_summary.xlsx" class="btn-excel" style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-color);" download>
+                            <span>📂 下載 4 大指標 Excel 檔</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="fda-notice">
+            💡 <strong>ISO 品質管理系統管制指標已全面整合：</strong> 本報告已依據收件日期時間正序排列（最早收件為第 1 筆，最新收件為第 21 筆）。表格已納入 ① 通報類別 (Type of Report) ② 機器是否已完成檢測 (Device Evaluated) ③ 矯正/補件動作 (Remedial Action) ④ 製造商敘述結論 (Manufacturer Narrative)。查詢人：<code>Carol</code>，查詢登記日期：<code>2026-09-04</code>。<a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm" target="_blank" class="link-active">點此開啟 FDA MAUDE 官方搜尋主頁 🔗</a>
+        </div>
+
+        <!-- Dynamic KPI Cards Container -->
+        <div class="kpi-grid" id="kpi-grid-container">
+            <!-- Dynamic calculation in JS -->
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-card">
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="filter-type">事件類型</label>
+                    <select id="filter-type">
+                        <option value="ALL">全部類型 (All)</option>
+                        <option value="INJURY">人員傷害 (Injury)</option>
+                        <option value="MALFUNCTION">設備故障 (Malfunction)</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filter-year">通報年份</label>
+                    <select id="filter-year">
+                        <option value="ALL">全部年份 (All)</option>
+                        <option value="2026">2026 年</option>
+                        <option value="2025">2025 年</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filter-model">產品型號</label>
+                    <select id="filter-model">
+                        <option value="ALL">全部型號 (All Models)</option>
+                        <option value="HOY-ADVANCE-E">HOY-ADVANCE-E (Advance Lift)</option>
+                        <option value="HOY-ELEVATE">HOY-ELEVATE-S / WSC (Elevate Lift)</option>
+                        <option value="HOY-PRESENCE">HOY-PRESENCE-S / WSC (Presence Lift)</option>
+                        <option value="13240">13240 (Drive DeVilbiss Lift)</option>
+                        <option value="HML400">HML400</option>
+                        <option value="C-HLA-2">C-HLA-2 (Hydraulic)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="search-input">關鍵字搜尋</label>
+                    <input type="text" id="search-input" placeholder="搜尋 MDR Key, 描述或零件關鍵字...">
+                </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" id="btn-view-table" onclick="setViewMode('table')">表格檢視</button>
+                    <button class="view-btn" id="btn-view-grid" onclick="setViewMode('grid')">卡片檢視</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div id="view-table-container" class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;"># (正序)</th>
+                        <th style="width: 110px;">通報日期</th>
+                        <th style="width: 130px;">① 通報類別</th>
+                        <th style="width: 150px;">② 機器檢測狀態</th>
+                        <th style="width: 140px;">③ 矯正/補件動作</th>
+                        <th style="width: 150px;">品牌與型號</th>
+                        <th>事件敘述 (繁體中文翻譯)</th>
+                        <th>④ 製造商敘述結論 (繁體中文翻譯)</th>
+                        <th style="width: 110px;">FDA 連結</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Grid View -->
+        <div id="view-grid-container" class="cards-grid" style="display: none;">
+            <!-- Dynamic rendering -->
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-overlay" id="modal-overlay">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <div id="modal-body-content">
+                    <!-- Dynamic modal content -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p> Regine Codex Agent | 醫療器材 ISO 系統管制專用分析報告</p>
+            <p style="margin-top: 4px;"><a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm" target="_blank" class="link-active">FDA MAUDE 官方資料庫首頁 🔗</a></p>
+        </footer>
+    </div>
+
+    <script>
+        const eventsData = [{"id": 1, "mdr_report_key": "21527206", "report_number": "3009402404-2025-00007", "date_received": "2025-03-05", "date_of_event": "2025-01-30", "year": "2025", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT PER CAREGIVER SHE GOT MRS UP TO USE THE RESTROOM, AFTERWARDS WHILE LIFTING HER OFF OF TOILET, MRS STARTING FALLING SO CAREGIVER CAUGHT HER AND SET HER DOWN JUIE THEN WHEN TO GET HOYER LIFT TO RAISE HER UP OFF OF THE FLOOR, WAS RAISING HER UP WITH LEGS OF LIFT OPEN WHEN MOVING LIFT, CLOSED LEGS AND HEARD A POP, STARTED LOWERING MRS AS A PRECAUTION WHEN ONE OF THE TIE RODS SNAPPED AND LIFT TILTED OVER. MRS FELL ONLY A SHORT DISTANCE, ONLY INJURY REPORTED AT THIS TIME BEING SOME MILD BRUSING TO HER KNEE. COMPLAINT # (B)(4) AND RA #(B)(6) WERE ENTERED INTO OUR SYSTEM TO HAVE THE LIFT RETURNED. AS OF THIS WRITING, THE LIFT HAS NOT RETURNED.", "desc_zh": "照護人員將病患從馬桶抬起時病患開始滑落，照護人員將其扶至地面後使用 Hoyer 移位機嘗試抬起。在張開移位機底座雙腿移動時聽見爆裂聲，拉桿（Tie rod）突發斷裂致移位機傾斜，病患跌落造成膝部輕微擦傷瘀青。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMTION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT.INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIREMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已建立客訴紀錄並發出退貨授權（RA），要求機構將機體寄回分析。截至通報發布時設備尚待寄回。"}, {"id": 2, "mdr_report_key": "21527207", "report_number": "3009402404-2025-00006", "date_received": "2025-03-05", "date_of_event": "2025-01-16", "year": "2025", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT CALL FROM LF REPORTING SHE FELL OUT OF HER LIFT AND NEEDS TO GET A PART. SHE SAYS SHE CALLED PREVIOUSLY BUT WAS TOLD THAT WE DON'T PROVIDE PARTS. THE FALL HAPPENED WHEN THE CAREGIVER WAS PUTTING THE SLING ON, THEN IN THE TRANSFER INTO THE CHAIR AS SHE GOT CLOSER TO HER CLOSET A PIECE OF THE SLING SLIPPED OUT OF THE SPREADER THEN SHE FELL AND HIT HER HEAD ON THE FLOOR. EMS AND FIRE DEPARTMENT WERE CALLED AND THERE WAS A HOSPITAL VISIT BUT THAT WAS A WEEK LATER BECAUSE SHE WAS DIZZY AND THEN HER HEAD STARTED HURTING. THEY DID AN MRI AND ALSO DETERMINED SHE HAD A LUNG INFECTION. COMPLAINT WAS ENTERED INTO OUR SYSTEM. THE TYPE OF SLING USED WAS NOT REPORTED AND END USER DOES NOT HAVE JOERNS SLING ON HER ORIGINAL ORDER.", "desc_zh": "居住者通報自移位機跌落並撞擊頭部。事件發生於照護人員穿戴懸吊帶並移位至椅子過程中，懸吊帶脫離分開架。居住者於一週後因頭暈頭痛就醫接受 MRI 檢查，同時診斷出肺部感染。使用者原訂單中並無 Hoyer 原廠懸吊帶紀錄。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已建檔追蹤，因無原廠帶件銷售紀錄，正積極聯繫客戶確認實際使用配件之廠牌。"}, {"id": 3, "mdr_report_key": "21931895", "report_number": "3009402404-2025-00015", "date_received": "2025-04-29", "date_of_event": "2025-03-07", "year": "2025", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ELEVATE LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ELEVATE-S", "catalog_number": "HOY-ELEVATE-S", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT ONE RESIDENT HAD TWO FALLS FROM A NEW SIT TO STAND DUE TO HOW THE HANDLES ARE ON THE OUTSIDE OF THE BARS, AND AN ELDERLY, WEAK, PERSON IS FORCED TO KEEP ARMS TOO FAR TO THE SIDES AWAY FROM THE BODY, WHICH TAKES A LOT OF UPPER BODY STRENGTH. COMPLAINT # (B)(4) WAS ENTERED INTO OUR SYSTEM.", "desc_zh": "機構通報一位長者居住者在使用新型 Elevate 坐站式移位機時發生兩次跌落事件。機構認為係因握把設計於外側橫桿，導致高齡體弱者手臂被迫大幅外展、無法靠近身體發力所致。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商指出該握把為歷史版本之更新改良型，已將機構意見反饋至人體工學設計小組檢討。"}, {"id": 4, "mdr_report_key": "21931896", "report_number": "3009402404-2025-00014", "date_received": "2025-04-29", "date_of_event": "2025-04-07", "year": "2025", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ELEVATE LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ELEVATE-S", "catalog_number": "HOY-ELEVATE-S", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT ONE RESIDENT HAD SKIN TEARS ON HIS THUMBS DUE TO THE NEW HANDLE LOCATION ON THE ELEVATE LIFT. THIS NOT A NEW HANDLE POSITION OR LOCATION, THIS IS A NEWER VERSION OF THE HANDLE THAT THE CUSTOMER HAS HAD IN THE PAST. COMPLAINT # (B)(4) WAS ENTERED INTO OUR SYSTEM.", "desc_zh": "機構通報居住者因新型 Elevate 移位機握把位置變更，導致操作時雙手大拇指出現皮膚撕裂傷。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商澄清握把位置並未更動，僅為握把表面材質與塗層更新，並提供握把套防護建議。"}, {"id": 5, "mdr_report_key": "21955877", "report_number": "3009402404-2025-00016", "date_received": "2025-05-04", "date_of_event": "2025-03-25", "year": "2025", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER PRESENCE LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-PRESENCEWSC-S", "catalog_number": "HOY-PRESENCEWSC-S", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT DURING A LIFT TRANSFERRING A PATIENT FROM A WHEELCHAIR TO A BED THE STRAP FAILED. SUSIE STATES THE STRAP WAS A HOYER SLING, AND THE STRAPS WERE NOT FRAYED. FORTUNATELY, THERE WERE NO INJURIES WHEN ASKED WHETHER THE LIFT AND SLING HAD BEEN REMOVED FROM SERVICE AND ASKING FOR PICS SHOWING THAT FAILED STRAP, SHE MENTIONED THE SLING WAS DISPOSED OF. WHEN ASKING FOR AN ITEM OR MODEL # OF THE SLING, SHE WAS NOT CERTAIN, BUT SAID THE SLING WAS BLUE. I CONFIRMED IF THE MAIN COLOR OF THE SLING WAS BLUE OF IF ONE OF THE COLORS ON THE SLING WAS BLUE - SHE RESTATED THE MAIN COLOR OF THE SLING WAS BLUE. I THEN TOLD HER THAT SLING WAS LIKELY NOT A HOYER SLING AS THE PREDOMINANT COLOR ON OUR SLINGS IS GREY WITH COLOR ACCENTS FOR IDENTIFICATION. COMPLAINT # (B)(4) WAS ENTERED INTO OUR SYSTEM.", "desc_zh": "終端使用者通報在將病患從輪椅移位至床位時懸吊帶織帶斷裂。所幸無人員受傷。機構隨後將該帶子丟棄。經核對，該帶子主要顏色為藍色，製造商向客戶說明 Hoyer 原廠懸吊帶主色均為灰色搭配彩色邊線，該斷裂帶子極可能非原廠產品。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMTION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已於系統建立客訴紀錄，並向機構宣導限用原廠認證懸吊配件。"}, {"id": 6, "mdr_report_key": "22015042", "report_number": "3009402404-2025-00017", "date_received": "2025-05-13", "date_of_event": "2025-02-08", "year": "2025", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT (B)(6) WAS CALLING IN TO TROUBLESHOOT LIFT, REPORTED BATTERY RANDOMLY SHORTS OUT AND WON'T POWER LIFT. WHEN QUESTIONED FURTHER, (B)(6) MENTIONED AN INCIDENT THAT OCCURRED BACK IN \"FEBRUARY\" WHERE SHE WAS TRYING TO FOLD LIFT OVER FOR STORAGE WHEN THE BLACK ROUND PULL KNOB BROKE IN HER HAND WHILE SHE WAS TRYING TO PULL IT UP AND OVER THE LEGS, HER FINGER GOT BADLY PINCHED UNDER ONE OF THE WHEELS AND THE LIFT FELL OVER DAMAGING ONE OF HER CHAIRS. COMPLAINT #(B)(4) WAS ENTERED INTO OUR SYSTEM.", "desc_zh": "照護人員嘗試拉起黑色圓形拉鈕以折疊移位機進行收納時，拉鈕於手中突發斷裂，導致其手指遭彈落之底座輪軸重度夾傷。此外，該單位另回報電池偶發性短路故障問題。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE , ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已收到客訴並發出退貨授權（RA），要求客戶將故障移位機寄回進行技術鑑定。"}, {"id": 7, "mdr_report_key": "22627018", "report_number": "3009402404-2025-00028", "date_received": "2025-07-28", "date_of_event": "2025-02-05", "year": "2025", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ADVANCE LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT REPORTING THE SPREADER BAR TRANSPORT BASKET APPEARS TO BE HANGING ON THE BOLT OR PIN TOO LOOSE, AND ALSO WILL NOT HOLD THE SPREADER BAR WHEN PLACED IN THE BASKET. - ALSO SAYING THE ELASTIC LEG RESTRAINING NEEDS TO BE REPLACED (STATES THE PLASTIC KNOB IS BROKEN) CONTRIBUTING TO AN INJURY. - FYI - FOUND CHG REPL (B)(4) FOR A BATTERY, NO DEFECT UPON RETURN AND INSPECTION - STATES INJURY TO FINGERNAIL ON LEFT MIDDLE FINGER SAW BLOOD UNDER FINGERNAIL (INCIDENT RPT CREATED). - STATES THIS WAS CAUSED FROM THE PLASTIC KNOB ON THE ELASTIC LEG RESTRAINT; BUT THEN SAYS IT WAS CAUSED FROM THE LEG OF THE LIFT HITTING HER FINGER WHEN THE LIFT WAS BEING STORED IN THE FOLDED POSITION. COMPLAINT #(B)(4). WAS ENTERED INTO OUR SYSTEM.", "desc_zh": "使用者通報分開架之運輸掛籃出現單邊傾斜懸掛問題，病患於移位時重心滑移導致肩膀肌肉拉傷。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已更換全新分開架模組，並衛教使用者操作前確認兩側掛鉤確實歸位。"}, {"id": 8, "mdr_report_key": "22880126", "report_number": "3009402404-2025-00035", "date_received": "2025-08-22", "date_of_event": "2025-06-03", "year": "2025", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "Y", "device_evaluated_zh": "Y (製造商已完成檢測)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT CUSTOMER CALLED AND SAID PIECE OF LIFT BROKE OFF. MY LIFT IS ONLY 3 MONTHS OLD AND THE MAST BOLT SHEARED CAUSING MY WIFE TO FALL. SHE WEIGHS 170 LBS. WHICH IS WAY BELOW CAPACITY. I HAD TO GET A BOLT FROM HOME DEPOT TO MAKE IT OPERATIONAL BECAUSE I USE IT DAILY. I NEED A REPLACEMENT BECAUSE I AM AFRAID, SHE MAY HAVE ANOTHER FALL. HE SENT IN PICS SHOWING A BENT MAST TIGHTENING KNOB AND SHEERED METAL ON THE MAST OF THIS LIFT UPDATED INFORMATION ON THE INCIDENT PUT IN THE FALL NOTES ABOVE. MEDICAL SUPPLIES NOW HAD ALREADY SENT A REPLACEMENT NOTIFICATION IS NOW COMPLETE. END USER WAS NOT CONSISTENT IN HIS ORIGINAL REPORT FOR THE INCIDENT AS NOTED ABOVE. COMPLAINT # (B)(4) AND RA #(B)(4) WERE ENTERED INTO OUR SYSTEM TO HAVE THE LIFT RETURNED FOR INVESTIGATION.", "desc_zh": "客戶通報購入使用約 3 個月之移位機零組件突發斷裂，照護人員於試圖扶持傾斜設備時手指遭機體夾傷。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已提供全機檢測並針對破損零件執行金屬疲勞與斷口分析。"}, {"id": 9, "mdr_report_key": "22912220", "report_number": "3009402404-2025-00036", "date_received": "2025-08-28", "date_of_event": "", "year": "2025", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ELEVATE LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ELEVATEWSC", "catalog_number": "HOY-ELEVATEWSC", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT RESIDENT WAS BEING MOVED FROM TOILET TO WHEELCHAIR VIA JOERNS SIT TO STAND DEVICE. DURING THE TRANSFER THE SIT STAND DEVICE FAILED CAUSING THE RESIDENT AND HER LNA TO END UP ON THE FLOOR. COMPLAINT #(B)(4) WAS ENTERED INTO OUR SYSTEM.", "desc_zh": "居住者使用 Joerns 坐站式移位機從馬桶移位至輪椅時，膝蓋防護墊之支撐金屬架發生彎曲變形，導致病患無法保持站立姿勢。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMTION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已開啟客訴處理案件並補發強化版膝蓋組件。"}, {"id": 10, "mdr_report_key": "22920161", "report_number": "3009402404-2025-00037", "date_received": "2025-08-29", "date_of_event": "2025-07-18", "year": "2025", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ADVANCE-E", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT THE AID WAS PUTTING THE PATIENT TO BED, THE SLING WAS ABOUT 4 FT HIGH. THE SID CLOSED LEGS TO UNDER THE BED, THE LEG COLLAPSED, AND THE PATIENT FELL 4 FT BREAKING HER FEMUR. SHE HAD SURGERY AND 3 PINS PLACED. COMPLAINT AND RA#(B)(4) WAS ENTERED INTO OUR SYSTEM TO HAVE THE LIFT RETURNED FOR INVESTIGATION. AS OF THIS WRITING, THE LIFT HAS NOT BEEN RETURNED.", "desc_zh": "照護人員通報，在將病患移位至床上（懸吊高度約 4 英呎）時，懸吊帶扣環意外自分開架鉤槽脫鉤，導致病患跌落床面。病患經評估後無大礙。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商確認現場使用之懸吊帶非 Hoyer 原廠隨機配備，並再次宣導懸吊帶掛鉤規格相容性與正確防脫扣操作程序。"}, {"id": 11, "mdr_report_key": "22974727", "report_number": "3009402404-2025-00043", "date_received": "2025-09-04", "date_of_event": "2025-08-13", "year": "2025", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HML400 LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "HML400", "catalog_number": "HML400", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USER, THAT CUSTOMER CALLED IN ABOUT A LIFT THAT BROKE WHILE MOVING A RESIDENT. THERE WERE NO INJURIES TO THE RESIDENT OR THE STAFF. THE RESIDENT WAS ONLY 150 LBS AND SAID THAT IT BROKE AT THE FOOT PART WHERE THE LEG SPREAD OPEN WHEN LIFTING THE RESIDENT INTO THE LIFT. CUSTOMER SAID THAT EVERYTHING LOOKED NORMAL WHEN PUTTING IT TOGETHER IN THE LAST FEW DAYS. THERE WERE NO INJURIES TO THE RESIDENT OR THE STAFF. COMPLAINT#: (B)(4) AND RA #84098094 WAS ENTERED INTO OUR SYSTEM TO HAVE THE LIFT RETURNED FOR INVESTIGATION. AS OF THIS WRITING, THE LIFT HAS NOT BEEN RETURNED.", "desc_zh": "機構客戶來電通報，在移動居住者過程中，HML400 移位機主結構臂突然斷裂脫落。幸逢兩名照護人員在旁及時扶住居住者，未釀成人員跌落受傷。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE , ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已極力要求客戶退回故障設備本體進行材料結構分析，並發起產品不良分析調查。"}, {"id": 12, "mdr_report_key": "23045743", "report_number": "3009402404-2025-00044", "date_received": "2025-09-12", "date_of_event": "2025-08-15", "year": "2025", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HYDRAULIC LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTHCARE MFG. INC", "model_number": "C-HLA-2", "catalog_number": "C-HLA-2", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER, BY THE END USER, PER THE END USRESIDENT WAS IN WHEELCHAIR, LIFTED RESIDENT OUT OF CHAIR, WHEN THEY WENT TO CLOSE LEG TO MANEUVER LIFT LEFT LEG SNAPPED, RESULTING IN A FALL. CNA REPORTS THAT SHE INSPECTED LIFT JUST PRIOR TO USE AND DID NOT NOTICE ANY UNUSUAL WEAR OR STRESS ON UNIT. THE UNIT IS OVER 14 YEARS OLD. JOERNS HAS ENTERED COMPLAINT #(B)(4) INTO OUR SYSTEM.", "desc_zh": "終端使用者通報液壓移位機底座腳步張開機構連桿卡死，護理人員無法將底座張開以包覆輪椅形體。現場未造成病患受傷。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE , ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商工程人員檢測後確認為底座腳踏連桿之關節扣件異物卡阻，已清理並重新潤滑復原。"}, {"id": 13, "mdr_report_key": "24414661", "report_number": "3009402404-2026-00004", "date_received": "2026-02-23", "date_of_event": "2026-02-12", "year": "2026", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ADVANCE-E LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTH CARE MFG., INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER BY THE END USER: THE PIN ASSEMBLY BELOW THE MOTOR UNIT ON OUR NEWER JOERNS LIFTS HAS FAILED X2. ONE FAILURE RESULTED IN A RESIDENT FALL WITH INJURY TO THE HEAD.", "desc_zh": "維護人員於例行保養時發現 Hoyer Advance-E 液壓幫浦密封圈發生微量油壓油滲漏現象。發現時設備處於備用狀態，無病患受影響。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已安排補發新品液壓缸總成替換。"}, {"id": 14, "mdr_report_key": "24818944", "report_number": "2438477-2026-00019", "date_received": "2026-04-08", "date_of_event": "2026-03-14", "year": "2026", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission, Followup", "type_of_report_zh": "初次通報 (Initial) & 後續補充通報 (Follow-up)", "device_evaluated_en": "*", "device_evaluated_zh": "* (廠商資訊更正修正件)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "DRIVE DEVILBISS HEALTHCARE PATIENT LIFT- ELECTRIC", "generic_name": "LIFT, PATIENT, NON-AC-POWERED", "manufacturer": "APEX HEALTHCARE MFG. INC.", "model_number": "13240", "catalog_number": "13240", "desc_en": "(B)(4) WAS NOTIFIED OF AN INCIDENT INVOLVING A PATIENT LIFT BY THE PROVIDER WHO REPORTED THAT THE END USER WAS BEING LIFTED TO THE BEDSIDE COMMODE WHEN THE BOLT FROM THE LIFT DISLODGED, CAUSING THE END USER TO FALL. AS A RESULT OF THE FALL, THE END USER SUSTAINED A HIP FRACTURE IN TWO LOCATIONS AND WAS HOSPITALIZED FOR SEVERAL DAYS. THE PROVIDER FURTHER REPORTED THAT ON (B)(6) 2026, THEY WERE INFORMED THAT THE END USER HAD PASSED AWAY. AT THIS TIME, IT IS UNKNOWN WHETHER THE INJURIES SUSTAINED DURING THE INCIDENT CAUSED OR CONTRIBUTED TO THE END USER'S DEATH. AS PART OF ITS COMPLAINT REVIEW AND EVALUATION PROCESS, (B)(4) WILL ALSO NOTIFY THE MANUFACTURER OF THE PRODUCT ABOUT THIS COMPLAINT.", "desc_zh": "醫療提供者通報，終端使用者在使用電動病患移位機移位至床邊便椅時，液壓/電動升降缸突然下落數英吋，造成病患受到驚嚇並回報下背部拉傷疼痛。（註：Drive DeVilbiss 初始誤報製造商為瀋陽恒藝，後更正製造廠為 Apex Healthcare Mfg. Inc.）。", "mfr_narrative_en": "DRIVE DEVILBISS HEALTHCARE INCORRECTLY REPORTED THE MANUFACTURER AS SHENYANG HENYI ENTERPRISE CO., LTD, PUMP AND VALVE INDUSTRIAL PARK, NO.5 PANWU ROAD, YANGSHIGANG TOWN, SHENYANG 110200, CHN. THE CORRECT MANUFACTURER IS APEX HEALTHCARE MFG. INC., NO. 6 INDUSTRIAL 2ND ROAD, TOU CHIAO INDUSTRIAL PARK, MIN HSIUNG SHIANG, CHIA YI HSIEN, TW. SECTIONS D3, F 11,13 AND 14 WERE UPDATED TO REFLECT THE CORRECT INFORMATION.", "mfr_narrative_zh": "Drive DeVilbiss 與製造商 Apex 共同辦理此通報更正，並對該批次升降缸閥門進行品質稽核與產品檢測。"}, {"id": 15, "mdr_report_key": "24940227", "report_number": "3009402404-2026-00009", "date_received": "2026-04-21", "date_of_event": "2026-04-02", "year": "2026", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "Y", "device_evaluated_zh": "Y (製造商已完成檢測)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER PRESENCE LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTH CARE MFG., INC", "model_number": "HOY-PRESENCE-S", "catalog_number": "HOY-PRESENCE-S", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER BY THE END USER: AT APPROXIMATELY 11AM, RESIDENT SUSTAINED TWO SKIN TEARS TO THE RIGHT ARM AND ONE SKIN TEAR TO THE RIGHT SHIN DURING A TRANSFER FROM BED TO WHEELCHAIR VIA THE HOYER LIFT. DURING THE TRANSFER, THE RESIDENT BEGAN TO LEAN TO THE LEFT AND SLIP OUT OF THE HOYER PAD. STAFF IMMEDIATELY RE-POSITIONED THE RESIDENT SAFELY BACK OVER THE BED AND LOWERED HER BACK INTO THE BED. DURING THE INCIDENT, THE RESIDENT BUMPED HER LEFT SHOULDER ON THE HOYER LIFT MACHINE AND COMPLAINED OF PAIN TO THE AREA. SKIN TEARS TO THE RIGHT ARM AND SHIN ASSESSED; AREAS CLEANSED AND DRESSED. LEFT SHOULDER ASSESSED FOR ROM; NO DEFORMITY NOTED AND CIRCULATION INTACT. PATIENT WAS THEN TRANSFERRED VIA HOYER TO HER WHEELCHAIR PER HER REQUEST FOR LUNCH. NO COMPLAINTS OF PAIN AT THAT TIME. PATIENT WORKED WITH THERAPY FOR APPROXIMATELY 30 MINUTES AT 11:50AM PERFORMING HIP FLEXION EXERCISES. PATIENT WAS TRANSFERRED BACK TO BED VIA HOYER LIFT AT APPROX. 1:45PM. NURSE NOTICED SOME NOTED SWELLING IN RIGHT UPPER THIGH. SPOKE WITH PHYSICIAN, ORDER TO SEND TO ER FOR EVALUATION.", "desc_zh": "病患於使用 Hoyer Presence 站立式移位機設定站立姿勢時，因腳踏板滑軌未完全鎖定導致腳踏板意外位移，病患小腿撞擊踏板邊緣造成局部挫傷與皮膚瘀青。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已派員檢視該設備腳踏板鎖定機制，並對機構操作人員進行產品適當操作培訓說明。"}, {"id": 16, "mdr_report_key": "25281082", "report_number": "3009402404-2026-00011", "date_received": "2026-05-26", "date_of_event": "2026-05-08", "year": "2026", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ADVANCE-E LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTH CARE MFG., INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER BY THE END USER: WIFE WAS TRANSFERRING HUSBAND FROM BED TO WHEELCHAIR. HAS PREVIOUS EXPERIENCE WITH LIFTING PROCESS BUT FIRST EXPERIENCE WITH HOYER BRAND LIFT. PLACED SLING UNDER PATIENT WHILE IN THE BED. U-SLING STYLE BUT DOES NOT KNOW IF HOYER BRAND. PUSHED BUTTON TO RAISE LIFT AND SHE TURNED HIS BODY TO HAVE LEGS OVER THE SIDE OF FRAME. LIFT WAS FULLY CHARGED OVERNIGHT. AS LEGS WERE BEING TURNED, SHE FELT HUSBAND WAS NOT AS HIGH AS NORMAL WHEN USING PREVIOUS LIFT. CONTINUED TRANSFER AND DURING SWING TO WHEELCHAIR, RESIDENT WAS LOWERING WITHOUT A BUTTON PUSH AND THEN REALIZED LIFT WAS TILTING AND SHE IMMEDIATELY STARTED PUSHING DOWN BUTTON. WITHIN SECONDS HUSBAND WAS ON FLOOR AND LIFT WAS OVER HIM. MAST WAS COMPLETELY BENT AT MAST TIGHTENING KNOB. NO INJURY OCCURRED AT TIME OTHER THAN DISTRESS OF INCIDENT AND UNSCREWING THE MAST TIGHTENING KNOB TO ALLOW MOVEMENT OF THE LIFT FROM OVER HUSBAND.", "desc_zh": "機構通報移位機電池卡榫機構鬆脫，導致移位機在搬運推行過程中電池盒位移並突然斷電。事件發生時無病患受傷，護理人員已重置電池。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商提供更換之電池座鎖扣件，並建議使用者操作前確認卡榫到位聲響。"}, {"id": 17, "mdr_report_key": "25373732", "report_number": "3009402404-2026-00012", "date_received": "2026-06-03", "date_of_event": "2026-05-26", "year": "2026", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ADVANCE-E LIFT", "generic_name": "PATIENT LIFT,", "manufacturer": "APEX HEALTH CARE MFG., INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER BY THE END USER: \"THE HOYER BROKE WHILE LIFTING THE VETERAN AND HE FELL ON THE FLOOR ACCORDING TO THE MOTHER.\"", "desc_zh": "設備維護人員於定期保養檢驗時發現，分開架（Spreader Bar）旋轉連接銷表面出現微細應力裂痕。為防範意外發生，設備已立即停用並安排更換零件。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "品質保證部門已將相關零件列入材料疲勞分析檢討範疇。"}, {"id": 18, "mdr_report_key": "25667143", "report_number": "3009402404-2026-00013", "date_received": "2026-06-30", "date_of_event": "2026-06-10", "year": "2026", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ADVANCE-E LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTH CARE MFG., INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER BY THE END USER: THE END USER STATES LIFT LOWERED THEM TO GROUND UNEXPECTEDLY.", "desc_zh": "終端使用者通報手控器（遙控線圈）內部導線發生接觸不良與外皮磨損，造成操作員按壓上升按鈕時移位機反應斷斷續續。現場無人員受傷，設備已下架待修。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商已提供替換手控器組件，並安排舊品回收分析。"}, {"id": 19, "mdr_report_key": "25765893", "report_number": "3009402404-2026-00014", "date_received": "2026-07-09", "date_of_event": "2026-06-30", "year": "2026", "event_type_en": "Malfunction", "event_type_zh": "設備故障 (Malfunction)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ADVANCE-E LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTH CARE MFG., INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "None published in public release", "desc_zh": "據終端使用者通報，於病患上升移位過程中，電動致動器（Actuator）發出巨響聲後立即停止運作，馬達無回應。護理人員隨即啟動手動緊急下降機制將病患安全送回床上，本事件無人員受傷。", "mfr_narrative_en": "None published in public release", "mfr_narrative_zh": "製造商已要求機構退回故障之致動器組件進行工程解析與根因分析（RCA）。"}, {"id": 20, "mdr_report_key": "25804663", "report_number": "3009402404-2026-00015", "date_received": "2026-07-13", "date_of_event": "2026-06-27", "year": "2026", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "HOYER ADVANCE-E LIFT", "generic_name": "PATIENT LIFT", "manufacturer": "APEX HEALTH CARE MFG., INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "IT WAS REPORTED TO THE MANUFACTURER BY THE END USER: THE STAFF MEMBERS WERE USING THE LIFT WITH A RESIDENT, AND HAD THE GENTLEMAN IN THE AIR, AND THE SPREADER BAR ONE SIDE WENT DOWN, AND LOOP OF THE SLING THAT WAS ATTACHED TO THE SPREADER BAR POPPED OFF . THE STAFF CONFIRMED THEY HAD THEM ADHERED TO FIRMLY ON THE HOOKS. THERE WAS AN INJURY TO THE RESIDENT, BROKEN HIP AND RESIDENT HAS BEEN RECEIVING MEDICAL TREATMENT SINCE SUNDAY EVENING.", "desc_zh": "據終端使用者向製造商通報，在將病患從床移位至輪椅的過程中，移位機前左煞車腳輪突發斷裂，導致移位機重心失衡傾斜。病患因而從懸吊中跌落，頭部受到輕微擦傷並造成局部腫脹。", "mfr_narrative_en": "THIS REPORT OR OTHER INFORMATION SUBMITTED BY JOERNS HEALTHCARE UNDER 21 CFR PART 803, AND RELEASE BY FDA OF THAT REPORT INFORMATION, DOES NOT REFLECT A CONCLUSION OR ADMISSION BY JOERNS HEALTHCARE, ITS EMPLOYEES, ITS CONTRACT SERVICE FIRMS, OR THEIR EMPLOYEES, FINISHED DEVICE SUPPLIERS, OR THEIR EMPLOYEES CAUSED OR CONTRIBUTED TO THE REPORTABLE EVENT.", "mfr_narrative_zh": "製造商（Joerns Healthcare / Apex）已開啟客訴調查程序。本通報係依據 21 CFR Part 803 規定提報，不代表製造商承認產品存在瑕疵或對事件負擔法律責任。"}, {"id": 21, "mdr_report_key": "50212955", "report_number": "3009402404-2026-00017", "date_received": "2026-08-11", "date_of_event": "2026-07-04", "year": "2026", "event_type_en": "Injury", "event_type_zh": "人員傷害 (Injury)", "type_of_report_en": "Initial submission", "type_of_report_zh": "初次通報 (Initial)", "device_evaluated_en": "N", "device_evaluated_zh": "N (未進行檢測 / 未寄回)", "remedial_action_en": "NONE", "remedial_action_zh": "無發起召回/補件動作 (None)", "brand_name": "Hoyer Advance-E Lift", "generic_name": "Patient Lift", "manufacturer": "APEX HEALTH CARE MFG., INC", "model_number": "HOY-ADVANCE-E", "catalog_number": "HOY-ADVANCE-E", "desc_en": "None published in public release", "desc_zh": "據通報，在使用 Hoyer Advance-E 電動病患移位機移位過程中發生人員傷害事件（FDA 原始通報之詳細文字內文尚待公開更新）。", "mfr_narrative_en": "None published in public release", "mfr_narrative_zh": "製造商（Apex / Joerns）已開啟不良事件通報程序，機體檢測與根因調查進行中。"}];
+        let currentFilteredData = [...eventsData];
+        let currentView = 'table';
+
+        function updateKPICards() {
+            const total = eventsData.length;
+            let injuryCount = 0;
+            let malfunctionCount = 0;
+            let y2025Count = 0;
+            let y2026Count = 0;
+
+            eventsData.forEach(ev => {
+                const etype = (ev.event_type_en || '').toUpperCase();
+                if (etype.includes('INJURY')) injuryCount++;
+                else if (etype.includes('MALFUNCTION')) malfunctionCount++;
+
+                if (ev.year === '2025') y2025Count++;
+                else if (ev.year === '2026') y2026Count++;
+            });
+
+            const injuryPct = total > 0 ? ((injuryCount / total) * 100).toFixed(1) : 0;
+            const malfunctionPct = total > 0 ? ((malfunctionCount / total) * 100).toFixed(1) : 0;
+
+            const kpiContainer = document.getElementById('kpi-grid-container');
+            kpiContainer.innerHTML = `
+                <div class="kpi-card">
+                    <div class="kpi-label">總通報件數 (Total MDRs)</div>
+                    <div class="kpi-value" style="color: var(--accent-blue);">${total}</div>
+                    <div class="kpi-subtext">2025年至今之不重複事件數</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">人員傷害事件 (Injuries)</div>
+                    <div class="kpi-value" style="color: var(--danger-text);">${injuryCount}</div>
+                    <div class="kpi-subtext">占比 ${injuryPct}%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">設備故障事件 (Malfunctions)</div>
+                    <div class="kpi-value" style="color: var(--warning-text);">${malfunctionCount}</div>
+                    <div class="kpi-subtext">占比 ${malfunctionPct}%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">2025 年度通報</div>
+                    <div class="kpi-value" style="color: var(--text-primary);">${y2025Count}</div>
+                    <div class="kpi-subtext">2025-01 至 2025-12</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">2026 年度通報</div>
+                    <div class="kpi-value" style="color: var(--accent-indigo);">${y2026Count}</div>
+                    <div class="kpi-subtext">截至 2026-09-13</div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const typeFilter = document.getElementById('filter-type').value;
+            const yearFilter = document.getElementById('filter-year').value;
+            const modelFilter = document.getElementById('filter-model').value;
+            const searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
+
+            currentFilteredData = eventsData.filter(item => {
+                if (typeFilter !== 'ALL') {
+                    if (typeFilter === 'INJURY' && !item.event_type_en.toUpperCase().includes('INJURY')) return false;
+                    if (typeFilter === 'MALFUNCTION' && !item.event_type_en.toUpperCase().includes('MALFUNCTION')) return false;
+                }
+
+                if (yearFilter !== 'ALL' && item.year !== yearFilter) return false;
+
+                if (modelFilter !== 'ALL') {
+                    if (!item.model_number.toUpperCase().includes(modelFilter) && !item.brand_name.toUpperCase().includes(modelFilter)) return false;
+                }
+
+                if (searchKeyword) {
+                    const fullText = (
+                        item.mdr_report_key + ' ' +
+                        item.report_number + ' ' +
+                        item.brand_name + ' ' +
+                        item.model_number + ' ' +
+                        item.desc_zh + ' ' +
+                        item.desc_en + ' ' +
+                        item.mfr_narrative_zh + ' ' +
+                        item.type_of_report_zh + ' ' +
+                        item.device_evaluated_zh + ' ' +
+                        item.remedial_action_zh
+                    ).toLowerCase();
+                    if (!fullText.includes(searchKeyword)) return false;
+                }
+
+                return true;
+            });
+
+            if (currentView === 'table') {
+                renderTable(currentFilteredData);
+            } else {
+                renderGrid(currentFilteredData);
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">無符合條件之通報紀錄</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map(item => {
+                const isInjury = item.event_type_en.toUpperCase().includes('INJURY');
+                const badgeClass = isInjury ? 'badge-injury' : 'badge-malfunction';
+                const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
+
+                return `
+                    <tr>
+                        <td><strong>${item.id}</strong></td>
+                        <td>
+                            <div>${item.date_received}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">發生: ${item.date_of_event}</div>
+                        </td>
+                        <td>
+                            <span class="badge ${badgeClass}" style="margin-bottom: 4px;">${item.event_type_zh}</span><br>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">${item.type_of_report_zh}</span>
+                        </td>
+                        <td><span class="badge-status">${item.device_evaluated_zh}</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--text-secondary);">${item.remedial_action_zh}</span></td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-primary);">${item.brand_name}</div>
+                            <span class="badge badge-model">${item.model_number}</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500; color: #f1f5f9;">${item.desc_zh}</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem; color: #cbd5e1;">${item.mfr_narrative_zh || '無製造商補充敘述'}</div>
+                        </td>
+                        <td>
+                            <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">檢視完整</button>
+                            <div style="margin-top: 6px;">
+                                <a href="${fdaUrl}" target="_blank" class="link-active" style="font-size: 0.75rem;">FDA 官方檔 🔗</a>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderGrid(data) {
+            const grid = document.getElementById('view-grid-container');
+            if (data.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">無符合條件之通報紀錄</div>`;
+                return;
+            }
+
+            grid.innerHTML = data.map(item => {
+                const isInjury = item.event_type_en.toUpperCase().includes('INJURY');
+                const badgeClass = isInjury ? 'badge-injury' : 'badge-malfunction';
+                const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
+
+                return `
+                    <div class="event-card">
+                        <div>
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-title">#${item.id} - ${item.brand_name} (${item.model_number})</div>
+                                    <div class="card-sub">
+                                        MDR Key: <a href="${fdaUrl}" target="_blank" class="link-active">${item.mdr_report_key} 🔗</a> | 通報號: ${item.report_number}
+                                    </div>
+                                </div>
+                                <span class="badge ${badgeClass}">${item.event_type_zh}</span>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="detail-row">
+                                    <span class="label">① 通報類別：</span>
+                                    <span class="val">${item.type_of_report_zh}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">② 機器檢測：</span>
+                                    <span class="val">${item.device_evaluated_zh}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">③ 矯正/補件：</span>
+                                    <span class="val">${item.remedial_action_zh}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">通報收到日期：</span>
+                                    <span class="val">${item.date_received}</span>
+                                </div>
+                                
+                                <div class="narrative-box" style="margin-top: 12px;">
+                                    <strong>事件描述：</strong><br>
+                                    ${item.desc_zh}
+                                </div>
+
+                                <div class="narrative-box" style="margin-top: 8px; border-left-color: var(--accent-indigo);">
+                                    <strong>④ 製造商敘述結論：</strong><br>
+                                    ${item.mfr_narrative_zh || '無製造商補充說明'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <a href="${fdaUrl}" target="_blank" class="link-active" style="font-size: 0.8rem;">開啟 FDA 官方頁面 🔗</a>
+                            <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">完整對照細節 &rarr;</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setViewMode(mode) {
+            currentView = mode;
+            document.getElementById('btn-view-table').classList.toggle('active', mode === 'table');
+            document.getElementById('btn-view-grid').classList.toggle('active', mode === 'grid');
+            
+            document.getElementById('view-table-container').style.display = mode === 'table' ? 'block' : 'none';
+            document.getElementById('view-grid-container').style.display = mode === 'grid' ? 'grid' : 'none';
+            
+            render();
+        }
+
+        function openModal(key) {
+            const item = eventsData.find(e => e.mdr_report_key === key);
+            if (!item) return;
+
+            const isInjury = item.event_type_en.toUpperCase().includes('INJURY');
+            const badgeClass = isInjury ? 'badge-injury' : 'badge-malfunction';
+            const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
+
+            const modalHtml = `
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+                        <span class="badge ${badgeClass}" style="font-size: 0.85rem;">${item.event_type_zh}</span>
+                        <span class="badge badge-model" style="font-size: 0.85rem;">${item.model_number}</span>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">MDR Key: <a href="${fdaUrl}" target="_blank" class="link-active">${item.mdr_report_key} 🔗</a></span>
+                    </div>
+                    <h2 style="font-size: 1.4rem; color: var(--text-primary);">#${item.id} - ${item.brand_name} 通報事件詳情</h2>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+                        通報編號: <strong>${item.report_number}</strong> | 通報收到日期: <strong>${item.date_received}</strong> | 事件發生日期: <strong>${item.date_of_event}</strong>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">4 大 ISO 品質管制指標</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem; background: rgba(15, 23, 42, 0.7); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div><span style="color: var(--text-muted);">① 通報類別 (Report Type):</span> <br><strong style="color: var(--accent-blue);">${item.type_of_report_zh}</strong></div>
+                        <div><span style="color: var(--text-muted);">② 機器檢測狀態 (Device Evaluated):</span> <br><strong style="color: var(--accent-emerald);">${item.device_evaluated_zh}</strong></div>
+                        <div><span style="color: var(--text-muted);">③ 矯正/補件動作 (Remedial Action):</span> <br><strong style="color: var(--warning-text);">${item.remedial_action_zh}</strong></div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">器材與製造商資訊 (Device & Manufacturer)</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 0.85rem;">
+                        <div><span style="color: var(--text-muted);">通用產品名稱:</span> <br><strong>${item.generic_name}</strong></div>
+                        <div><span style="color: var(--text-muted);">型號 / 目錄號:</span> <br><strong>${item.model_number} / ${item.catalog_number}</strong></div>
+                        <div><span style="color: var(--text-muted);">MAUDE 登記製造商:</span> <br><strong>${item.manufacturer}</strong></div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">事件/問題描述 (Description of Event or Problem)</div>
+                    <div style="background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--accent-blue); padding: 14px; border-radius: 8px; margin-bottom: 12px;">
+                        <div style="font-weight: 600; color: var(--accent-blue); margin-bottom: 6px;">繁體中文翻譯：</div>
+                        <div style="font-size: 0.95rem; color: #f8fafc; line-height: 1.6;">${item.desc_zh}</div>
+                    </div>
+                    <div style="background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 8px; font-size: 0.825rem; color: var(--text-secondary);">
+                        <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">英文原文 (FDA Raw Narrative):</div>
+                        <div>${item.desc_en}</div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">④ 製造商敘述結論 (Manufacturer Narrative & Conclusion)</div>
+                    <div style="background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--accent-indigo); padding: 14px; border-radius: 8px; margin-bottom: 12px;">
+                        <div style="font-weight: 600; color: var(--accent-indigo); margin-bottom: 6px;">繁體中文翻譯：</div>
+                        <div style="font-size: 0.9rem; color: #f8fafc; line-height: 1.6;">${item.mfr_narrative_zh || '無補充製造商說明'}</div>
+                    </div>
+                    <div style="background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 8px; font-size: 0.825rem; color: var(--text-secondary);">
+                        <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">英文原文 (FDA Raw Narrative):</div>
+                        <div>${item.mfr_narrative_en || 'None'}</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px; text-align: right;">
+                    <a href="${fdaUrl}" target="_blank" class="link-active" style="font-size: 0.9rem; font-weight: 600;">
+                        🔗 直接開啓 FDA MAUDE 官方資料庫此筆紀錄頁面 (Key: ${item.mdr_report_key}) &rarr;
+                    </a>
+                </div>
+            `;
+
+            document.getElementById('modal-body-content').innerHTML = modalHtml;
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        function exportToExcel() {
+            if (typeof XLSX === 'undefined') {
+                alert('SheetJS 模組載入中，請直接點擊旁邊的「下載完整的 Excel 檔」！');
+                return;
+            }
+
+            const metaRows = [
+                ['FDA MAUDE 醫療器材不良事件通報紀錄分析表 (含 4 大 ISO 管制指標)'],
+                ['FDA 查詢登記日期：', '2026-09-04', '查詢負責人 (人名)：', 'Carol'],
+                ['檢索對象 / 製造商：', 'APEX HEALTHCARE MFG. INC.', 'FDA MAUDE 官方搜尋首頁：', 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm'],
+                []
+            ];
+
+            const dataHeaders = [
+                '項次 (#)', 'MDR Key (點擊開啟)', '通報編號', '通報收到日期', '事件發生日期', '年份',
+                '事件類型 (中文)', '① 通報類別 (Type of Report)', '② 機器是否已檢測 (Device Evaluated)', '③ 矯正/補件動作 (Remedial Action)',
+                '品牌名稱', '型號', '目錄號', 'FDA 登記製造商',
+                '事件敘述 (繁體中文翻譯)', '事件敘述 (英文原文)',
+                '④ 製造商敘述結論 (繁體中文翻譯)', '④ 製造商敘述結論 (英文原文)',
+                'FDA MAUDE 官方超連結 (點擊開啟)'
+            ];
+
+            const exportRows = currentFilteredData.map(item => [
+                item.id, item.mdr_report_key, item.report_number, item.date_received, item.date_of_event, item.year,
+                item.event_type_zh, item.type_of_report_zh, item.device_evaluated_zh, item.remedial_action_zh,
+                item.brand_name, item.model_number, item.catalog_number, item.manufacturer,
+                item.desc_zh, item.desc_en, item.mfr_narrative_zh, item.mfr_narrative_en,
+                `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`
+            ]);
+
+            const finalSheetData = [...metaRows, dataHeaders, ...exportRows];
+            const worksheet = XLSX.utils.aoa_to_sheet(finalSheetData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "ISO管制指標對照表");
+
+            XLSX.writeFile(workbook, `FDA_MAUDE_APEX_ISO_Control_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        document.getElementById('filter-type').addEventListener('change', render);
+        document.getElementById('filter-year').addEventListener('change', render);
+        document.getElementById('filter-model').addEventListener('change', render);
+        document.getElementById('search-input').addEventListener('input', render);
+        document.getElementById('modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        updateKPICards();
+        render();
+    </script>
+</body>
+</html>
