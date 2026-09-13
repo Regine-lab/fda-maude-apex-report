@@ -51,7 +51,7 @@
         }
 
         .container {
-            max-width: 1550px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -582,12 +582,12 @@
                         <div>FDA 查詢登記日期：<strong>2026-09-13</strong></div>
                         <div>查詢負責人：<strong>Regine</strong></div>
                         <div id="sync-badge-container">
-                            <span id="sync-status-badge" style="font-size: 0.8rem; font-weight: 600; color: #14532D; background: #E8EFE6; padding: 4px 10px; border-radius: 999px; border: 1px solid #A3C99B;">🟢 筆電本機已儲存</span>
+                            <span id="sync-status-badge" style="font-size: 0.8rem; font-weight: 600; color: #14532D; background: #E8EFE6; padding: 4px 10px; border-radius: 999px; border: 1px solid #A3C99B;">🟢 本機資料庫運作中</span>
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; align-items: center;">
-                        <button id="btn-save-local" class="btn-excel" style="background: linear-gradient(135deg, #495642 0%, #3B4734 100%); color: #FFFFFF;" onclick="saveLocalTracking()">
-                            <span>💾 儲存追蹤變更 (儲存至筆電檔)</span>
+                        <button id="btn-save-all" class="btn-excel" style="background: linear-gradient(135deg, #495642 0%, #3B4734 100%); color: #FFFFFF;" onclick="saveAllRows()">
+                            <span>💾 儲存全頁所有追蹤變更</span>
                         </button>
                         <label class="btn-excel" style="background: #FAF7F2; color: #4A463F !important; border: 1px solid var(--border-color); cursor: pointer; box-shadow: none;">
                             <span style="color: #4A463F !important;">📂 載入追蹤備份檔</span>
@@ -605,7 +605,7 @@
         </header>
 
         <div class="fda-notice">
-            💡 <strong>ISO 品質管理系統管制指標已全面整合：</strong> 本報告已依據收件日期時間正序排列（最早收件為第 1 筆，最新收件為第 21 筆）。表格已納入 ① 通報類別 ② 機器是否已完成檢測 ③ 矯正/補件動作 ④ 製造商敘述結論 ⑤ 客戶是否結案？ ⑥ 是否轉客訴流程？ ⑦ 追蹤備註/客訴單號。查詢人：<code>Regine</code>，查詢登記日期：<code>2026-09-13</code>。<a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm" target="_blank" class="link-active">點此開啟 FDA MAUDE 官方搜尋主頁 🔗</a>
+            💡 <strong>ISO 品質管理系統管制指標已全面整合：</strong> 本報告已依據收件日期時間正序排列（最早收件為第 1 筆，最新收件為第 21 筆）。每一筆紀錄右側皆配有獨立 <strong>💾 儲存此筆</strong> 按鈕。點擊即可將選單與文字備註硬性鎖定儲存於本機。查詢人：<code>Regine</code>，查詢登記日期：<code>2026-09-13</code>。<a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm" target="_blank" class="link-active">點此開啟 FDA MAUDE 官方搜尋主頁 🔗</a>
         </div>
 
         <!-- Dynamic KPI Cards Container -->
@@ -689,10 +689,10 @@
                         <th style="width: 140px;">品牌與型號</th>
                         <th style="min-width: 200px;">事件敘述 (繁體中文翻譯)</th>
                         <th style="min-width: 200px;">④ 製造商敘述結論 (繁體中文翻譯)</th>
-                        <th style="width: 135px; background-color: #495642;">⑤ 客戶是否結案？ (互動選單)</th>
-                        <th style="width: 135px; background-color: #495642;">⑥ 是否轉客訴流程？ (互動選單)</th>
-                        <th style="min-width: 180px; background-color: #495642;">⑦ 追蹤備註 / 客訴單號 (自由打字)</th>
-                        <th style="width: 100px;">FDA 連結</th>
+                        <th style="width: 135px; background-color: #495642;">⑤ 客戶是否結案？ (選單)</th>
+                        <th style="width: 135px; background-color: #495642;">⑥ 是否轉客訴流程？ (選單)</th>
+                        <th style="min-width: 180px; background-color: #495642;">⑦ 追蹤備註 / 客訴單號 (打字)</th>
+                        <th style="width: 140px; background-color: #3B4734;">單筆儲存與操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -725,7 +725,7 @@
 
     <!-- Toast Notification Popup -->
     <div id="toast-notification" class="toast-notification">
-        <span id="toast-message">✅ 追蹤變更已成功儲存！</span>
+        <span id="toast-message">✅ 紀錄已成功儲存！</span>
     </div>
 
     <script>
@@ -761,15 +761,55 @@
             if (!badge) return;
             if (status === 'synced') {
                 badge.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #14532D; background: #E8EFE6; padding: 4px 10px; border-radius: 999px; border: 1px solid #A3C99B;';
-                badge.innerHTML = '🟢 筆電本機已儲存';
+                badge.innerHTML = '🟢 本機紀錄已儲存';
             } else if (status === 'unsaved') {
                 badge.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #B45309; background: #FEF3C7; padding: 4px 10px; border-radius: 999px; border: 1px solid #FCD34D;';
-                badge.innerHTML = '🟡 有新修改未儲存';
+                badge.innerHTML = '🟡 有新修改未儲存 (請按儲存)';
             }
         }
 
-        function saveLocalTracking() {
+        function saveRowItem(key, btnElem = null) {
             const store = getTrackingStore();
+            const closedSelect = document.getElementById(`select-closed-${key}`);
+            const complaintSelect = document.getElementById(`select-complaint-${key}`);
+            const noteInput = document.getElementById(`input-note-${key}`);
+
+            if (!store[key]) {
+                store[key] = { is_closed: '待確認', is_complaint: '評估中', note: '' };
+            }
+
+            if (closedSelect) store[key].is_closed = closedSelect.value;
+            if (complaintSelect) store[key].is_complaint = complaintSelect.value;
+            if (noteInput) store[key].note = noteInput.value;
+
+            localStorage.setItem('fda_apex_tracking_status', JSON.stringify(store));
+            updateKPICards();
+            updateSyncBadge('synced');
+
+            if (btnElem) {
+                btnElem.style.cssText = 'background: #14532D; color: #FFFFFF !important; border: 1px solid #A3C99B; font-size: 0.75rem; padding: 6px 12px; margin-bottom: 6px; width: 100%; justify-content: center; font-weight: 700; cursor: pointer; border-radius: 6px;';
+                btnElem.innerHTML = '✅ 已儲存';
+            }
+
+            showToast(`✅ 第 #${key} 筆事件之追蹤紀錄與文字備註已成功儲存！`);
+        }
+
+        function saveAllRows() {
+            const store = getTrackingStore();
+            eventsData.forEach(ev => {
+                const key = ev.mdr_report_key;
+                const closedSelect = document.getElementById(`select-closed-${key}`);
+                const complaintSelect = document.getElementById(`select-complaint-${key}`);
+                const noteInput = document.getElementById(`input-note-${key}`);
+
+                if (!store[key]) {
+                    store[key] = { is_closed: '待確認', is_complaint: '評估中', note: '' };
+                }
+                if (closedSelect) store[key].is_closed = closedSelect.value;
+                if (complaintSelect) store[key].is_complaint = complaintSelect.value;
+                if (noteInput) store[key].note = noteInput.value;
+            });
+
             localStorage.setItem('fda_apex_tracking_status', JSON.stringify(store));
 
             // Export hard backup file to laptop's download folder
@@ -781,8 +821,10 @@
             downloadAnchor.click();
             downloadAnchor.remove();
 
+            updateKPICards();
+            render();
             updateSyncBadge('synced');
-            showToast('✅ 所有變更與文字備註已成功儲存！(已備份備份檔至筆電)');
+            showToast('✅ 全頁所有筆數之選單與打字備註已完全儲存並備份至筆電！');
         }
 
         function importLocalBackup(event) {
@@ -863,7 +905,7 @@
             if (val === '處理中') bgStyle = 'background-color: #FEF3C7; color: #B45309 !important; border: 1.5px solid #FCD34D;';
 
             return `
-                <select onchange="updateTrackingStatus('${key}', 'is_closed', this.value, this)" 
+                <select id="select-closed-${key}" onchange="updateTrackingStatus('${key}', 'is_closed', this.value, this)" 
                         style="${bgStyle} font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;">
                     <option value="待確認" ${val === '待確認' ? 'selected' : ''}>⏳ 待確認</option>
                     <option value="處理中" ${val === '處理中' ? 'selected' : ''}>🔄 處理中</option>
@@ -879,7 +921,7 @@
             if (val === '否') bgStyle = 'background-color: #E8EFE6; color: #14532D !important; border: 1.5px solid #A3C99B;';
 
             return `
-                <select onchange="updateTrackingStatus('${key}', 'is_complaint', this.value, this)" 
+                <select id="select-complaint-${key}" onchange="updateTrackingStatus('${key}', 'is_complaint', this.value, this)" 
                         style="${bgStyle} font-weight: 700; padding: 6px 8px; border-radius: 8px; font-size: 0.825rem; outline: none; cursor: pointer; width: 100%;">
                     <option value="評估中" ${val === '評估中' ? 'selected' : ''}>🔍 評估中</option>
                     <option value="是" ${val === '是' ? 'selected' : ''}>⚠️ 是 (轉客訴)</option>
@@ -892,10 +934,10 @@
             const val = currentVal || '';
             return `
                 <input type="text" 
+                       id="input-note-${key}"
                        value="${escapeHtml(val)}" 
                        placeholder="自由輸入備註/客訴單號..." 
                        oninput="updateTrackingNote('${key}', this.value)" 
-                       onchange="saveLocalTracking()"
                        style="width: 100%; min-width: 150px; padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--border-color); background: #FFFFFF; font-size: 0.825rem; font-weight: 500; outline: none; color: #000000 !important;">
             `;
         }
@@ -1020,6 +1062,11 @@
                 const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
                 const track = getTrackingStatus(item.mdr_report_key);
 
+                const isSaved = (track.is_closed !== '待確認' || track.is_complaint !== '評估中' || (track.note && track.note.trim() !== ''));
+                const btnStyle = isSaved 
+                    ? 'background: #14532D; color: #FFFFFF !important; border: 1px solid #A3C99B; font-size: 0.75rem; padding: 6px 12px; margin-bottom: 6px; width: 100%; justify-content: center; font-weight: 700; cursor: pointer; border-radius: 6px;'
+                    : 'background: linear-gradient(135deg, #495642 0%, #3B4734 100%); color: #FFFFFF !important; font-size: 0.75rem; padding: 6px 12px; margin-bottom: 6px; width: 100%; justify-content: center; font-weight: 700; cursor: pointer; border-radius: 6px;';
+
                 return `
                     <tr>
                         <td><strong>#${item.id}</strong></td>
@@ -1057,9 +1104,11 @@
                             ${getNoteInputHtml(item.mdr_report_key, track.note)}
                         </td>
                         <td>
-                            <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">檢視完整</button>
-                            <div style="margin-top: 6px;">
-                                <a href="${fdaUrl}" target="_blank" class="link-active" style="font-size: 0.75rem;">FDA 官方檔 🔗</a>
+                            <button id="btn-save-${item.mdr_report_key}" onclick="saveRowItem('${item.mdr_report_key}', this)" class="btn-excel" style="${btnStyle}">
+                                ${isSaved ? '✅ 已儲存' : '💾 儲存此筆'}
+                            </button>
+                            <div style="margin-top: 4px;">
+                                <button class="action-btn" onclick="openModal('${item.mdr_report_key}')" style="font-size: 0.75rem; padding: 4px 8px; width: 100%;">完整對照</button>
                             </div>
                         </td>
                     </tr>
@@ -1079,6 +1128,7 @@
                 const badgeClass = isInjury ? 'badge-injury' : 'badge-malfunction';
                 const fdaUrl = `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/detail.cfm?mdrfoi__id=${item.mdr_report_key}`;
                 const track = getTrackingStatus(item.mdr_report_key);
+                const isSaved = (track.is_closed !== '待確認' || track.is_complaint !== '評估中' || (track.note && track.note.trim() !== ''));
 
                 return `
                     <div class="event-card">
@@ -1139,7 +1189,9 @@
                         </div>
 
                         <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <a href="${fdaUrl}" target="_blank" class="link-active" style="font-size: 0.8rem;">開啟 FDA 官方頁面 🔗</a>
+                            <button onclick="saveRowItem('${item.mdr_report_key}', this)" class="btn-excel" style="font-size: 0.8rem; padding: 6px 12px;">
+                                ${isSaved ? '✅ 已儲存此筆' : '💾 儲存此筆'}
+                            </button>
                             <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">完整對照細節 &rarr;</button>
                         </div>
                     </div>
@@ -1205,6 +1257,9 @@
                             ${getNoteInputHtml(item.mdr_report_key, track.note)}
                         </div>
                     </div>
+                    <button onclick="saveRowItem('${item.mdr_report_key}', this)" class="btn-excel" style="background: linear-gradient(135deg, #495642 0%, #3B4734 100%); color: #FFFFFF !important; font-size: 0.85rem; padding: 10px 18px; margin-top: 14px; width: 100%; justify-content: center;">
+                        💾 儲存此筆資料變更
+                    </button>
                 </div>
 
                 <div class="modal-section">
