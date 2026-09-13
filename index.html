@@ -788,10 +788,10 @@
                             <span class="badge badge-model">${item.model_number}</span>
                         </td>
                         <td>
-                            <div class="text-zh" style="font-weight: 500; color: #000000 !important; line-height: 1.6; font-size: 0.9rem;">${item.desc_zh}</div>
+                            <div class="text-zh" style="font-weight: 700 !important; color: #000000 !important; -webkit-text-fill-color: #000000 !important; line-height: 1.6; font-size: 0.925rem;">${item.desc_zh}</div>
                         </td>
                         <td>
-                            <div class="text-zh" style="font-size: 0.875rem; color: #000000 !important; font-weight: 500; line-height: 1.6;">${item.mfr_narrative_zh || '無製造商補充敘述'}</div>
+                            <div class="text-zh" style="font-size: 0.9rem; color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 700 !important; line-height: 1.6;">${item.mfr_narrative_zh || '無製造商補充敘述'}</div>
                         </td>
                         <td>
                             <button class="action-btn" onclick="openModal('${item.mdr_report_key}')">檢視完整</button>
@@ -848,13 +848,13 @@
                                 </div>
                                 
                                 <div class="narrative-box" style="margin-top: 12px;">
-                                    <strong>事件描述：</strong><br>
-                                    ${item.desc_zh}
+                                    <strong style="color: #000000 !important;">事件描述 (中文翻譯)：</strong><br>
+                                    <div style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 700 !important; font-size: 0.925rem; margin-top: 4px;">${item.desc_zh}</div>
                                 </div>
 
-                                <div class="narrative-box" style="margin-top: 8px; border-left-color: var(--accent-indigo);">
-                                    <strong>④ 製造商敘述結論：</strong><br>
-                                    ${item.mfr_narrative_zh || '無製造商補充說明'}
+                                <div class="narrative-box" style="margin-top: 8px; border-left-color: var(--accent-warm);">
+                                    <strong style="color: #000000 !important;">④ 製造商敘述結論 (中文翻譯)：</strong><br>
+                                    <div style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 700 !important; font-size: 0.9rem; margin-top: 4px;">${item.mfr_narrative_zh || '無製造商補充說明'}</div>
                                 </div>
                             </div>
                         </div>
